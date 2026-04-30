@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Journal de Course</title>
+    <title>Race Library</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -11,110 +11,103 @@
         body { background-color: var(--bg); color: #1e293b; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .card-race { background: white; border-radius: 28px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.02); position: relative; }
         .img-box { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; height: 180px; background: #eee; }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; background: #eee; }
         .modal { position: fixed; inset: 0; background: white; z-index: 1000; overflow-y: auto; padding: 24px; display: none; }
-        .field { background: #f1f5f9; border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid transparent; }
-        .field label { display: block; font-size: 11px; font-weight: 900; color: var(--main); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .field { background: #f1f5f9; border-radius: 20px; padding: 16px; margin-bottom: 16px; }
+        .field label { display: block; font-size: 11px; font-weight: 900; color: var(--main); text-transform: uppercase; margin-bottom: 4px; }
         .field input, .field select { background: transparent; border: none; color: #1e293b; width: 100%; font-weight: 700; outline: none; font-size: 18px; }
-        .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 20px; padding: 20px; width: 100%; text-transform: uppercase; font-size: 16px; box-shadow: 0 10px 20px rgba(255, 94, 98, 0.3); }
-        .rp-pill { background: white; border-radius: 28px; padding: 22px; margin-bottom: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.01); }
-        .badge-delete { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); color: #94a3b8; width: 30px; height: 30px; border-radius: 50%; display: flex; items-center; justify-content: center; font-size: 14px; font-weight: bold; z-index: 10; }
+        .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 20px; padding: 20px; width: 100%; text-transform: uppercase; font-size: 16px; }
+        /* RP BAR OPTIMIZED */
+        .rp-bar { background: white; border-radius: 20px; padding: 15px 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,0,0,0.01); }
+        .rp-item { flex: 1; text-align: center; border-right: 1px solid #f1f5f9; }
+        .rp-item:last-child { border-right: none; }
+        .badge-delete { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); color: #94a3b8; width: 30px; height: 30px; border-radius: 50%; display: flex; items-center; justify-content: center; font-weight: bold; z-index: 10; }
     </style>
 </head>
 <body>
 
 <div class="max-w-md mx-auto p-6 pb-32">
     
-    <header class="flex justify-between items-center mb-10">
+    <header class="flex justify-between items-center mb-8">
         <div onclick="openSelector()" class="cursor-pointer">
-            <h1 class="text-2xl font-black italic tracking-tighter text-slate-800">RACE <span class="text-rose-500">LIBRARY</span></h1>
-            <h2 id="displayProfile" class="text-xs font-black uppercase tracking-widest text-slate-400 mt-1 italic">Chargement...</h2>
+            <h1 class="text-2xl font-black italic tracking-tighter text-slate-800 uppercase">Race <span class="text-rose-500">Library</span></h1>
+            <h2 id="displayProfile" class="text-[11px] font-black uppercase tracking-widest text-slate-400 mt-1 italic">...</h2>
         </div>
-        <div class="flex gap-3">
-            <button onclick="openBackup()" class="w-12 h-12 flex items-center justify-center text-slate-300">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        <div class="flex gap-2">
+            <button onclick="openBackup()" class="w-10 h-10 flex items-center justify-center text-slate-300">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             </button>
             <button onclick="openForm()" class="w-14 h-14 bg-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-500/40">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
         </div>
     </header>
 
-    <!-- RECORDS PERSONNELS PLUS GRANDS -->
-    <div class="rp-pill">
-        <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] mb-5 text-center">Records Personnels</p>
-        <div class="grid grid-cols-4 gap-2 text-center">
-            <div><p class="text-[9px] font-black text-rose-400 uppercase mb-1">5k</p><p id="rp5" class="text-sm font-black text-slate-800">--</p></div>
-            <div><p class="text-[9px] font-black text-rose-400 uppercase mb-1">10k</p><p id="rp10" class="text-sm font-black text-slate-800">--</p></div>
-            <div><p class="text-[9px] font-black text-rose-400 uppercase mb-1">Semi</p><p id="rp21" class="text-sm font-black text-slate-800">--</p></div>
-            <div><p class="text-[9px] font-black text-rose-400 uppercase mb-1">Mara</p><p id="rp42" class="text-sm font-black text-slate-800">--</p></div>
-        </div>
+    <!-- BARRE DES RP AGRANDIE ET SUR UNE LIGNE -->
+    <div class="rp-bar">
+        <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">5k</p><p id="rp5" class="text-base font-black text-slate-800">--</p></div>
+        <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">10k</p><p id="rp10" class="text-base font-black text-slate-800">--</p></div>
+        <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">Semi</p><p id="rp21" class="text-base font-black text-slate-800">--</p></div>
+        <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">Mara</p><p id="rp42" class="text-base font-black text-slate-800">--</p></div>
     </div>
 
-    <div id="statsBox" class="grid grid-cols-2 gap-4 mb-10"></div>
+    <div id="statsBox" class="grid grid-cols-2 gap-4 mb-8"></div>
     <div id="raceList"></div>
 </div>
 
 <!-- SELECTEUR SECRET -->
 <div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center;">
     <div class="w-full max-w-[280px] text-center">
-        <h3 class="font-black text-slate-800 text-3xl mb-10 uppercase italic tracking-tighter">Qui court ?</h3>
+        <h3 class="font-black text-slate-800 text-3xl mb-10 uppercase italic">Qui court ?</h3>
         <div class="flex flex-col gap-5">
             <button onclick="selectProfile('Vincent')" class="btn-joy py-6 text-xl">VINCENT</button>
-            <button onclick="selectProfile('Albane')" class="btn-joy py-6 text-xl" style="background: linear-gradient(135deg, #6366f1, #a855f7); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);">ALBANE</button>
+            <button onclick="selectProfile('Albane')" class="btn-joy py-6 text-xl" style="background: linear-gradient(135deg, #6366f1, #a855f7);">ALBANE</button>
         </div>
     </div>
 </div>
 
-<!-- FORMULAIRE PLUS LISIBLE -->
+<!-- FORMULAIRE -->
 <div id="formModal" class="modal">
-    <div class="flex justify-between items-center mb-10">
+    <div class="flex justify-between items-center mb-8">
         <h2 class="text-2xl font-black text-slate-800 italic uppercase">Nouvelle Course</h2>
-        <button onclick="closeForm()" class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 font-bold">✕</button>
+        <button onclick="closeForm()" class="text-slate-400 font-black">✕</button>
     </div>
-    <div class="field"><label>Nom de l'épreuve</label><input type="text" id="fName" placeholder="Ex: Marathon de Paris"></div>
+    <div class="field"><label>Nom de l'épreuve</label><input type="text" id="fName" placeholder="..."></div>
     <div class="grid grid-cols-2 gap-4">
         <div class="field"><label>Date</label><input type="date" id="fDate"></div>
-        <div class="field"><label>Catégorie</label>
+        <div class="field"><label>Format</label>
             <select id="fCat" onchange="autoDist()">
-                <option value="Autre">Autre</option>
-                <option value="5 KM">5 KM</option>
-                <option value="10 KM">10 KM</option>
-                <option value="Semi">Semi</option>
-                <option value="Marathon">Marathon</option>
-                <option value="Trail">Trail</option>
+                <option value="Autre">Autre</option><option value="5 KM">5 KM</option><option value="10 KM">10 KM</option><option value="Semi">Semi</option><option value="Marathon">Marathon</option><option value="Trail">Trail</option>
             </select>
         </div>
     </div>
     <div class="grid grid-cols-2 gap-4">
         <div class="field"><label>Distance (KM)</label><input type="number" id="fDist" step="0.01"></div>
-        <div class="field"><label>Chrono (HHMMSS)</label>
-            <input type="text" id="fTime" placeholder="00:00:00" oninput="formatTime(this)" maxlength="8">
-        </div>
+        <div class="field"><label>Chrono</label><input type="text" id="fTime" placeholder="00:00:00" oninput="formatTime(this)" maxlength="8"></div>
     </div>
     <div class="grid grid-cols-2 gap-4 mb-10">
         <label class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer" id="label1">
             <span id="txt1" class="text-xs font-black text-slate-400 uppercase">Dossard</span>
-            <input type="file" accept="image/*" class="hidden" onchange="uploadToCloud(this, 1)">
+            <input type="file" accept="image/*" class="hidden" onchange="handleUpload(this, 1)">
         </label>
         <label class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer" id="label2">
-            <span id="txt2" class="text-xs font-black text-slate-400 uppercase">Course</span>
-            <input type="file" accept="image/*" class="hidden" onchange="uploadToCloud(this, 2)">
+            <span id="txt2" class="text-xs font-black text-slate-400 uppercase">Action</span>
+            <input type="file" accept="image/*" class="hidden" onchange="handleUpload(this, 2)">
         </label>
     </div>
-    <button onclick="saveEntry()" class="btn-joy">Enregistrer l'exploit</button>
+    <button onclick="saveEntry()" class="btn-joy italic">Enregistrer l'exploit</button>
 </div>
 
 <!-- BACKUP -->
 <div id="backupModal" class="modal">
-    <div class="flex justify-between items-center mb-10">
-        <h2 class="text-2xl font-black text-slate-800 italic uppercase">Coffre-fort</h2>
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-black text-slate-800 italic uppercase">Backup</h2>
         <button onclick="closeBackup()" class="text-slate-400 font-bold uppercase text-xs">Fermer</button>
     </div>
-    <textarea id="backupText" readonly class="w-full p-5 bg-slate-50 rounded-2xl text-xs mb-6 h-48 border-none outline-none font-mono text-slate-400 leading-relaxed"></textarea>
-    <button onclick="copyBackup()" class="btn-joy mb-12">Copier mon code</button>
-    <textarea id="importText" placeholder="Coller un code ici..." class="w-full p-5 bg-slate-100 rounded-2xl text-xs mb-6 border-none outline-none"></textarea>
-    <button onclick="runImport()" class="w-full py-4 text-sm font-black text-rose-500 uppercase tracking-widest">Restaurer les données</button>
+    <textarea id="backupText" readonly class="w-full p-5 bg-slate-50 rounded-2xl text-[10px] mb-6 h-48 font-mono text-slate-400"></textarea>
+    <button onclick="copyBackup()" class="btn-joy mb-8">Copier</button>
+    <textarea id="importText" placeholder="Coller code ici..." class="w-full p-5 bg-slate-100 rounded-2xl text-[10px] mb-6"></textarea>
+    <button onclick="runImport()" class="w-full font-black text-rose-500 uppercase">Importer</button>
 </div>
 
 <script>
@@ -142,7 +135,7 @@
     function openSelector() { document.getElementById('profileModal').style.display = 'flex'; }
     if(currentProfile) selectProfile(currentProfile); else openSelector();
 
-    async function uploadToCloud(input, num) {
+    async function handleUpload(input, num) {
         const file = input.files[0]; if(!file) return;
         const txt = document.getElementById('txt' + num);
         txt.innerText = "...";
@@ -152,7 +145,7 @@
             const data = await res.json();
             if(num === 1) cloudImg1 = data.secure_url; else cloudImg2 = data.secure_url;
             txt.innerText = "OK";
-        } catch(e) { txt.innerText = "Err."; }
+        } catch(e) { txt.innerText = "ERR"; }
     }
 
     function autoDist() {
@@ -187,8 +180,8 @@
 
         const totalKm = data.reduce((a,r) => a + (parseFloat(r.k)||0), 0);
         document.getElementById('statsBox').innerHTML = `
-            <div class="bg-white p-6 rounded-[2rem] shadow-sm text-center border border-slate-50"><p class="text-2xl font-black text-rose-500 italic">${data.length}</p><p class="text-[10px] font-black text-slate-300 uppercase">Courses</p></div>
-            <div class="bg-white p-6 rounded-[2rem] shadow-sm text-center border border-slate-50"><p class="text-2xl font-black text-indigo-500 italic">${totalKm.toFixed(1)}</p><p class="text-[10px] font-black text-slate-300 uppercase">Total KM</p></div>
+            <div class="bg-white p-6 rounded-[2rem] shadow-sm text-center border border-slate-50"><p class="text-2xl font-black text-rose-500 italic">${data.length}</p><p class="text-[10px] font-black text-slate-300 uppercase tracking-tighter">Courses</p></div>
+            <div class="bg-white p-6 rounded-[2rem] shadow-sm text-center border border-slate-50"><p class="text-2xl font-black text-indigo-500 italic">${totalKm.toFixed(1)}</p><p class="text-[10px] font-black text-slate-300 uppercase tracking-tighter">Total KM</p></div>
         `;
 
         list.innerHTML = data.map(r => `
@@ -199,7 +192,7 @@
                     <p class="text-[11px] font-black text-rose-400 uppercase tracking-widest mb-1">${r.d} • ${r.c}</p>
                     <h3 class="text-2xl font-black text-slate-800 italic uppercase leading-tight mb-6">${r.n}</h3>
                     <div class="flex justify-between border-t border-slate-50 pt-6">
-                        <div><p class="text-[10px] font-black text-slate-300 uppercase mb-1">Distance</p><p class="text-xl font-black text-slate-700">${r.k}<span class="text-xs ml-1 text-slate-400 italic">KM</span></p></div>
+                        <div><p class="text-[10px] font-black text-slate-300 uppercase mb-1">Distance</p><p class="text-xl font-black text-slate-700">${r.k}<span class="text-xs ml-1 text-slate-400 italic font-black">KM</span></p></div>
                         <div><p class="text-[10px] font-black text-slate-300 uppercase mb-1">Chrono</p><p class="text-xl font-black text-slate-700 italic">${r.t}</p></div>
                         <div class="text-right"><p class="text-[10px] font-black text-slate-300 uppercase mb-1">Allure</p><p class="text-xl font-black text-emerald-400 italic">${getPace(r.t, r.k)}</p></div>
                     </div>
@@ -217,15 +210,15 @@
         cloudImg1 = ""; cloudImg2 = ""; closeForm(); render();
     }
 
-    function deleteEntry(id) { if(confirm("Supprimer cette course ?")) { const key = 'data_v32_' + currentProfile; let pData = JSON.parse(localStorage.getItem(key) || "[]"); pData = pData.filter(r => r.id !== id); localStorage.setItem(key, JSON.stringify(pData)); render(); } }
-    function openForm() { document.getElementById('formModal').style.display = 'block'; }
+    function deleteEntry(id) { if(confirm("Supprimer ?")) { const key = 'data_v32_' + currentProfile; let pData = JSON.parse(localStorage.getItem(key) || "[]"); pData = pData.filter(r => r.id !== id); localStorage.setItem(key, JSON.stringify(pData)); render(); } }
+    function openForm() { cloudImg1 = ""; cloudImg2 = ""; document.getElementById('txt1').innerText = "Dossard"; document.getElementById('txt2').innerText = "Action"; document.getElementById('formModal').style.display = 'block'; }
     function closeForm() { document.getElementById('formModal').style.display = 'none'; }
     function openBackup() {
         const v = localStorage.getItem('data_v32_Vincent') || "[]"; const a = localStorage.getItem('data_v32_Albane') || "[]";
         document.getElementById('backupText').value = btoa(JSON.stringify({ vincent: JSON.parse(v), albane: JSON.parse(a) }));
         document.getElementById('backupModal').style.display = 'block';
     }
-    function copyBackup() { document.getElementById('backupText').select(); document.execCommand('copy'); alert("Code copié !"); }
+    function copyBackup() { document.getElementById('backupText').select(); document.execCommand('copy'); alert("Copié"); }
     function runImport() { try { const d = JSON.parse(atob(document.getElementById('importText').value)); localStorage.setItem('data_v32_Vincent', JSON.stringify(d.vincent)); localStorage.setItem('data_v32_Albane', JSON.stringify(d.albane)); location.reload(); } catch(e) { alert("Code invalide."); } }
     function closeBackup() { document.getElementById('backupModal').style.display = 'none'; }
 </script>
