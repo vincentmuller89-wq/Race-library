@@ -3,28 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Race Library Pro - Stable</title>
+    <title>Race Library Pro - Final Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff5e62; --sub: #ff9966; --bg: #f8fafc; }
         body { background-color: var(--bg); color: #1e293b; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .card-race { background: white; border-radius: 28px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.08); position: relative; }
-        .img-box { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; height: 180px; background: #f1f5f9; }
+        
+        /* Correction de la superposition */
+        .card-race { background: white; border-radius: 28px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.08); position: relative; display: flex; flex-direction: column; }
+        .img-box { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; height: 200px; background: #f1f5f9; width: 100%; flex-shrink: 0; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-content { padding: 20px; position: relative; z-index: 2; background: white; border-radius: 24px 24px 0 0; margin-top: -20px; }
+        
         .rp-bar { background: white; border-radius: 24px; padding: 18px 10px; margin-bottom: 25px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.01); }
         .rp-item { text-align: center; flex: 1; border-right: 1px solid #f1f5f9; }
         .rp-item:last-child { border-right: none; }
         .rp-val { font-size: 1.1rem; font-weight: 900; color: #1e293b; }
+        
         .modal { position: fixed; inset: 0; background: white; z-index: 1000; overflow-y: auto; padding: 24px; display: none; }
         .field { background: #f1f5f9; border-radius: 20px; padding: 14px 18px; margin-bottom: 16px; }
         .field label { display: block; font-size: 10px; font-weight: 900; color: var(--main); text-transform: uppercase; margin-bottom: 2px; }
         .field input, .field select { background: transparent; border: none; width: 100%; font-weight: 700; outline: none; font-size: 18px; color: #1e293b; }
-        .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 22px; padding: 20px; width: 100%; text-transform: uppercase; transition: all 0.2s; border: none; }
+        
+        .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 22px; padding: 20px; width: 100%; text-transform: uppercase; border: none; }
         .btn-joy:disabled { opacity: 0.5; filter: grayscale(1); }
+        
         .upload-zone { border: 2px dashed #e2e8f0; border-radius: 20px; padding: 15px; text-align: center; position: relative; min-height: 80px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .upload-zone.active { border-color: #10b981; background: #ecfdf5; color: #10b981; }
-        .badge-delete { position: absolute; top: 12px; right: 12px; background: white; color: #ef4444; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .badge-delete { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); color: #ef4444; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -43,7 +52,6 @@
         </button>
     </header>
 
-    <!-- BARRE DES RECORDS -->
     <div class="rp-bar">
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">5k</p><p id="rp5" class="rp-val">--</p></div>
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">10k</p><p id="rp10" class="rp-val">--</p></div>
@@ -55,14 +63,14 @@
     <div id="raceList"></div>
 
     <div class="mt-12 text-center">
-        <button onclick="exportData()" class="text-[10px] font-bold text-slate-400 uppercase border border-slate-200 px-4 py-2 rounded-full">Sauvegarder les données (Export)</button>
+        <button onclick="exportData()" class="text-[10px] font-bold text-slate-400 uppercase border border-slate-200 px-4 py-2 rounded-full">Exporter les données</button>
     </div>
 </div>
 
 <!-- FORMULAIRE -->
 <div id="formModal" class="modal">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-black italic uppercase">Nouvelle Performance</h2>
+        <h2 class="text-2xl font-black italic uppercase">Nouvelle Course</h2>
         <button onclick="closeForm()" class="text-slate-400 text-2xl">✕</button>
     </div>
     
@@ -99,13 +107,13 @@
         </label>
     </div>
 
-    <button id="saveBtn" onclick="saveEntry()" class="btn-joy italic w-full">Enregistrer la course</button>
+    <button id="saveBtn" onclick="saveEntry()" class="btn-joy italic w-full">Enregistrer</button>
 </div>
 
-<!-- CHOIX PROFIL -->
+<!-- PROFIL -->
 <div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center;">
     <div class="w-full max-w-[280px]">
-        <h3 class="font-black text-3xl mb-8 italic uppercase text-center">Qui court ?</h3>
+        <h3 class="font-black text-3xl mb-8 italic uppercase text-center">Profil</h3>
         <button onclick="selectProfile('Vincent')" class="btn-joy py-6 mb-4 w-full">VINCENT</button>
         <button onclick="selectProfile('Albane')" class="btn-joy py-6 w-full" style="background: #a855f7;">ALBANE</button>
     </div>
@@ -113,19 +121,25 @@
 
 <script>
     const CLOUD_NAME = "dt7tr0sec"; 
-    const UPLOAD_PRESET = "xlgyluge"; // Mis à jour !
+    const UPLOAD_PRESET = "xlgyluge";
     let currentProfile = localStorage.getItem('active_profile_race');
     let currentPhotos = { i1: "", i2: "" };
     let isUploading = false;
 
-    // --- ENVOI PHOTO ---
+    // --- NETTOYAGE DU TEMPS (Supprime les 00:) ---
+    function cleanT(t) {
+        if(!t || t === "00:00:00") return "--";
+        // Supprime le premier "00:" s'il existe
+        let formatted = t.replace(/^00:/, '');
+        // Si c'est encore "00:xx", on peut encore raccourcir ou laisser tel quel
+        return formatted;
+    }
+
     async function uploadImage(input, num) {
         const file = input.files[0]; if (!file) return;
         const txt = document.getElementById('txt' + num);
         const btn = document.getElementById('saveBtn');
-        
-        isUploading = true;
-        btn.disabled = true;
+        isUploading = true; btn.disabled = true;
         txt.innerText = "ENVOI...";
 
         const fd = new FormData();
@@ -133,31 +147,25 @@
         fd.append('upload_preset', UPLOAD_PRESET);
 
         try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: fd
-            });
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
             const data = await res.json();
-
             if (data.secure_url) {
                 if(num === 1) currentPhotos.i1 = data.secure_url;
                 else currentPhotos.i2 = data.secure_url;
                 document.getElementById('up' + num).classList.add('active');
                 txt.innerText = "OK ✓";
-            } else {
-                alert("Erreur Cloudinary : " + data.error.message);
-                txt.innerText = "ERREUR";
             }
-        } catch (e) {
-            alert("Erreur de connexion au Cloud");
-            txt.innerText = "PANNE";
-        } finally {
-            isUploading = false;
-            btn.disabled = false;
-        }
+        } catch (e) { alert("Erreur Cloud"); txt.innerText = "ERREUR"; }
+        finally { isUploading = false; btn.disabled = false; }
     }
 
-    // --- LOGIQUE CORE ---
+    function formatTime(input) {
+        let v = input.value.replace(/\D/g, '');
+        if (v.length >= 5) v = v.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
+        else if (v.length >= 3) v = v.replace(/(\d{2})(\d{2})/, "$1:$2");
+        input.value = v;
+    }
+
     function selectProfile(p) {
         currentProfile = p;
         localStorage.setItem('active_profile_race', p);
@@ -167,7 +175,6 @@
     }
 
     function openSelector() { document.getElementById('profileModal').style.display = 'flex'; }
-    
     function openForm() { 
         currentPhotos = { i1: "", i2: "" };
         document.querySelectorAll('.upload-zone').forEach(z => z.classList.remove('active'));
@@ -175,15 +182,7 @@
         document.getElementById('txt2').innerText = "Photo Médaille";
         document.getElementById('formModal').style.display = 'block'; 
     }
-
     function closeForm() { document.getElementById('formModal').style.display = 'none'; }
-
-    function formatTime(input) {
-        let v = input.value.replace(/\D/g, '');
-        if (v.length >= 5) v = v.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
-        else if (v.length >= 3) v = v.replace(/(\d{2})(\d{2})/, "$1:$2");
-        input.value = v;
-    }
 
     function autoDist() {
         const map = {"5 KM":"5.00","10 KM":"10.00","Semi":"21.10","Marathon":"42.20"};
@@ -192,10 +191,9 @@
     }
 
     function saveEntry() {
-        if (isUploading) return alert("Photo en cours d'envoi...");
+        if (isUploading) return;
         const name = document.getElementById('fName').value;
-        if (!name) return alert("Nom manquant");
-
+        if (!name) return;
         const key = 'data_v32_' + currentProfile;
         const data = JSON.parse(localStorage.getItem(key) || "[]");
         data.unshift({
@@ -208,8 +206,7 @@
             i1: currentPhotos.i1, i2: currentPhotos.i2
         });
         localStorage.setItem(key, JSON.stringify(data));
-        closeForm();
-        render();
+        closeForm(); render();
     }
 
     function render() {
@@ -220,9 +217,8 @@
 
         list.innerHTML = data.map(r => {
             totalKm += parseFloat(r.k || 0);
-            // Calcul RP simplifié
-            const distKey = parseFloat(r.k).toFixed(2);
-            if(records[distKey] === undefined || !records[distKey] || r.t < records[distKey]) records[distKey] = r.t;
+            const dKey = parseFloat(r.k).toFixed(2);
+            if(records[dKey] === undefined || !records[dKey] || r.t < records[dKey]) records[dKey] = r.t;
 
             return `
             <div class="card-race">
@@ -231,21 +227,21 @@
                     ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Dossard</div>`}
                     ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Médaille</div>`}
                 </div>
-                <div class="p-6">
-                    <p class="text-[10px] font-black text-rose-500 uppercase">${r.d} • ${r.c}</p>
-                    <h2 class="text-xl font-black italic uppercase text-slate-800">${r.n}</h2>
+                <div class="card-content">
+                    <p class="text-[10px] font-black text-rose-500 uppercase mb-1">${r.d} • ${r.c}</p>
+                    <h2 class="text-xl font-black italic uppercase text-slate-800 leading-tight">${r.n}</h2>
                     <div class="flex justify-between mt-4 pt-4 border-t border-slate-50">
-                        <div><p class="text-[8px] text-slate-400 font-bold uppercase">Dist.</p><p class="font-black italic">${r.k}k</p></div>
-                        <div><p class="text-[8px] text-slate-400 font-bold uppercase">Chrono</p><p class="font-black italic">${r.t.replace(/^00:/,'')}</p></div>
+                        <div><p class="text-[8px] text-slate-400 font-bold uppercase">Distance</p><p class="font-black italic">${r.k}k</p></div>
+                        <div><p class="text-[8px] text-slate-400 font-bold uppercase">Temps</p><p class="font-black italic">${cleanT(r.t)}</p></div>
                     </div>
                 </div>
             </div>`;
         }).join('');
 
-        document.getElementById('rp5').innerText = records["5.00"] || "--";
-        document.getElementById('rp10').innerText = records["10.00"] || "--";
-        document.getElementById('rp21').innerText = records["21.10"] || "--";
-        document.getElementById('rp42').innerText = records["42.20"] || "--";
+        document.getElementById('rp5').innerText = cleanT(records["5.00"]);
+        document.getElementById('rp10').innerText = cleanT(records["10.00"]);
+        document.getElementById('rp21').innerText = cleanT(records["21.10"]);
+        document.getElementById('rp42').innerText = cleanT(records["42.20"]);
 
         document.getElementById('statsBox').innerHTML = `
             <div class="bg-white p-5 rounded-3xl text-center shadow-sm"><p class="text-2xl font-black text-rose-500 italic">${data.length}</p><p class="text-[9px] font-bold text-slate-300 uppercase">Courses</p></div>
@@ -253,15 +249,13 @@
         `;
     }
 
-    function deleteEntry(id) {
-        if(confirm("Supprimer ?")) {
-            const key = 'data_v32_' + currentProfile;
-            let data = JSON.parse(localStorage.getItem(key) || "[]");
-            data = data.filter(r => r.id !== id);
-            localStorage.setItem(key, JSON.stringify(data));
-            render();
-        }
-    }
+    function deleteEntry(id) { if(confirm("Supprimer ?")) { 
+        const key = 'data_v32_' + currentProfile;
+        let data = JSON.parse(localStorage.getItem(key) || "[]");
+        data = data.filter(r => r.id !== id);
+        localStorage.setItem(key, JSON.stringify(data));
+        render(); 
+    }}
 
     function exportData() {
         const v = localStorage.getItem('data_v32_Vincent') || "[]";
@@ -269,7 +263,7 @@
         const blob = new Blob([JSON.stringify({Vincent:JSON.parse(v), Albane:JSON.parse(a)})], {type:'text/plain'});
         const lnk = document.createElement('a');
         lnk.href = URL.createObjectURL(blob);
-        lnk.download = "race_library_backup.txt";
+        lnk.download = "race_backup.txt";
         lnk.click();
     }
 
