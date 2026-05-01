@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Race Library Ultimate</title>
+    <title>Race Library Pro Ultra</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -22,7 +22,7 @@
         .field input, .field select { background: transparent; border: none; width: 100%; font-weight: 700; outline: none; font-size: 18px; color: #1e293b; }
         .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 22px; padding: 20px; width: 100%; text-transform: uppercase; transition: all 0.2s; }
         .btn-joy:disabled { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-        .upload-zone { border: 2px dashed #e2e8f0; border-radius: 20px; padding: 20px; text-align: center; transition: all 0.3s; position: relative; overflow: hidden; }
+        .upload-zone { border: 2px dashed #e2e8f0; border-radius: 20px; padding: 20px; text-align: center; transition: all 0.3s; position: relative; }
         .upload-zone.active { border-color: #10b981; background: #ecfdf5; color: #10b981; }
         .badge-delete { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 10; border: none; }
     </style>
@@ -40,6 +40,7 @@
         </button>
     </header>
 
+    <!-- RP BAR -->
     <div class="rp-bar">
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">5k</p><p id="rp5" class="rp-val">--</p></div>
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">10k</p><p id="rp10" class="rp-val">--</p></div>
@@ -47,10 +48,14 @@
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">42k</p><p id="rp42" class="rp-val">--</p></div>
     </div>
 
+    <!-- STATS -->
     <div id="statsBox" class="grid grid-cols-2 gap-4 mb-8"></div>
+    
+    <!-- LISTE -->
     <div id="raceList"></div>
 </div>
 
+<!-- FORMULAIRE -->
 <div id="formModal" class="modal">
     <div class="flex justify-between items-center mb-8">
         <h2 class="text-2xl font-black italic uppercase">Nouvelle Performance</h2>
@@ -82,17 +87,18 @@
     <div class="grid grid-cols-2 gap-4 mb-8">
         <label class="upload-zone cursor-pointer" id="up1">
             <span id="txt1" class="text-[10px] font-black uppercase">Photo Dossard</span>
-            <input type="file" accept="image/*" class="hidden" onchange="uploadFile(this, 1)">
+            <input type="file" accept="image/*" class="hidden" onchange="processAndUpload(this, 1)">
         </label>
         <label class="upload-zone cursor-pointer" id="up2">
             <span id="txt2" class="text-[10px] font-black uppercase">Photo Médaille</span>
-            <input type="file" accept="image/*" class="hidden" onchange="uploadFile(this, 2)">
+            <input type="file" accept="image/*" class="hidden" onchange="processAndUpload(this, 2)">
         </label>
     </div>
 
     <button id="saveBtn" onclick="saveEntry()" class="btn-joy italic">Enregistrer</button>
 </div>
 
+<!-- PROFIL MODAL -->
 <div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center;">
     <div class="w-full max-w-[280px] text-center">
         <h3 class="font-black text-3xl mb-8 italic uppercase">Qui court ?</h3>
@@ -108,6 +114,60 @@
     let currentPhotos = { i1: "", i2: "" };
     let isUploading = false;
 
+    // --- COMPRESSION ET UPLOAD ---
+    async function processAndUpload(input, num) {
+        const file = input.files[0]; if(!file) return;
+        const zone = document.getElementById('up' + num);
+        const txt = document.getElementById('txt' + num);
+        const btn = document.getElementById('saveBtn');
+
+        isUploading = true;
+        btn.disabled = true;
+        txt.innerText = "CALCUL...";
+
+        try {
+            const bitmap = await createImageBitmap(file);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const maxSide = 1200;
+            let w = bitmap.width;
+            let h = bitmap.height;
+
+            if (w > h && w > maxSide) { h = (h * maxSide) / w; w = maxSide; }
+            else if (h > maxSide) { w = (w * maxSide) / h; h = maxSide; }
+
+            canvas.width = w; canvas.height = h;
+            ctx.drawImage(bitmap, 0, 0, w, h);
+            
+            canvas.toBlob(async (blob) => {
+                txt.innerText = "ENVOI...";
+                const fd = new FormData();
+                fd.append('file', blob);
+                fd.append('upload_preset', UPLOAD_PRESET);
+
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: fd
+                });
+                
+                const data = await res.json();
+                if(data.secure_url) {
+                    if(num === 1) currentPhotos.i1 = data.secure_url; 
+                    else currentPhotos.i2 = data.secure_url;
+                    txt.innerText = "PRÊT ✓";
+                    zone.classList.add('active');
+                }
+                isUploading = false;
+                btn.disabled = false;
+            }, 'image/jpeg', 0.7);
+        } catch (e) {
+            txt.innerText = "ERREUR";
+            isUploading = false;
+            btn.disabled = false;
+        }
+    }
+
+    // --- LOGIQUE CORE ---
     function formatTime(input) {
         let v = input.value.replace(/\D/g, '');
         if (v.length > 6) v = v.slice(0, 6);
@@ -121,10 +181,8 @@
     function autoDist() {
         const c = document.getElementById('fCat').value;
         const d = document.getElementById('fDist');
-        if(c==="5 KM") d.value="5.00";
-        else if(c==="10 KM") d.value="10.00";
-        else if(c==="Semi") d.value="21.10";
-        else if(c==="Marathon") d.value="42.20";
+        const map = {"5 KM":"5.00","10 KM":"10.00","Semi":"21.10","Marathon":"42.20"};
+        if(map[c]) d.value = map[c];
     }
 
     function selectProfile(p) {
@@ -135,55 +193,16 @@
         render();
     }
 
-    if(currentProfile) selectProfile(currentProfile); else document.getElementById('profileModal').style.display = 'flex';
-
-    function openSelector() { document.getElementById('profileModal').style.display = 'flex'; }
-    
     function openForm() { 
         currentPhotos = { i1: "", i2: "" }; 
         document.getElementById('saveBtn').disabled = false;
         document.querySelectorAll('.upload-zone').forEach(z => z.classList.remove('active'));
         document.getElementById('txt1').innerText = "Photo Dossard";
         document.getElementById('txt2').innerText = "Photo Médaille";
-        document.getElementById('fName').value = "";
-        document.getElementById('fDist').value = "";
-        document.getElementById('fTime').value = "";
         document.getElementById('formModal').style.display = 'block'; 
     }
     
     function closeForm() { document.getElementById('formModal').style.display = 'none'; }
-
-    async function uploadFile(input, num) {
-        const file = input.files[0]; if(!file) return;
-        const zone = document.getElementById('up' + num);
-        const txt = document.getElementById('txt' + num);
-        const btn = document.getElementById('saveBtn');
-
-        isUploading = true; 
-        btn.disabled = true;
-        txt.innerText = "...ENVOI...";
-
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('upload_preset', UPLOAD_PRESET);
-
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-            const data = await res.json();
-            
-            if(data.secure_url) {
-                if(num === 1) currentPhotos.i1 = data.secure_url; 
-                else currentPhotos.i2 = data.secure_url;
-                txt.innerText = "PRÊT ✓";
-                zone.classList.add('active');
-            }
-        } catch(e) {
-            txt.innerText = "ERREUR";
-        } finally {
-            isUploading = false; 
-            btn.disabled = false;
-        }
-    }
 
     function saveEntry() {
         if(isUploading) return;
@@ -239,8 +258,8 @@
             <div class="card-race">
                 <button onclick="deleteEntry(${r.id})" class="badge-delete">✕</button>
                 <div class="img-box">
-                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center bg-slate-50 text-[10px] font-bold text-slate-200">DOSSARD</div>`}
-                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center bg-slate-50 text-[10px] font-bold text-slate-200">MÉDAILLE</div>`}
+                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center bg-slate-50 text-[9px] font-bold text-slate-300">DOSSARD</div>`}
+                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center bg-slate-50 text-[9px] font-bold text-slate-300">MÉDAILLE</div>`}
                 </div>
                 <div class="p-6">
                     <p class="text-[10px] font-black text-rose-400 uppercase mb-1">${r.d} • ${r.c}</p>
@@ -263,6 +282,8 @@
             render();
         }
     }
+
+    if(currentProfile) selectProfile(currentProfile); else document.getElementById('profileModal').style.display = 'flex';
 </script>
 </body>
 </html>
