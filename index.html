@@ -10,22 +10,19 @@
         :root { --main: #ff5e62; --sub: #ff9966; --bg: #f8fafc; }
         body { background-color: var(--bg); color: #1e293b; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* Liste des Courses */
         .card-race { background: white; border-radius: 28px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 12px 30px -10px rgba(0,0,0,0.08); position: relative; }
         .img-box { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; height: 180px; background: #eee; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Barre des RP sur une ligne */
-        .rp-bar { background: white; border-radius: 24px; padding: 18px 10px; margin-bottom: 25px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .rp-bar { background: white; border-radius: 24px; padding: 18px 10px; margin-bottom: 25px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.01); }
         .rp-item { text-align: center; flex: 1; border-right: 1px solid #f1f5f9; }
         .rp-item:last-child { border-right: none; }
         .rp-val { font-size: 1.1rem; font-weight: 900; color: #1e293b; letter-spacing: -0.025em; }
 
-        /* Formulaire */
         .modal { position: fixed; inset: 0; background: white; z-index: 1000; overflow-y: auto; padding: 24px; display: none; }
         .field { background: #f1f5f9; border-radius: 20px; padding: 14px 18px; margin-bottom: 16px; }
         .field label { display: block; font-size: 10px; font-weight: 900; color: var(--main); text-transform: uppercase; margin-bottom: 2px; }
-        .field input { background: transparent; border: none; width: 100%; font-weight: 700; outline: none; font-size: 18px; }
+        .field input, .field select { background: transparent; border: none; width: 100%; font-weight: 700; outline: none; font-size: 18px; color: #1e293b; }
         
         .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 22px; padding: 20px; width: 100%; text-transform: uppercase; transition: all 0.2s; }
         .btn-joy:disabled { opacity: 0.4; filter: grayscale(1); }
@@ -49,7 +46,7 @@
         </button>
     </header>
 
-    <!-- RP BAR OPTIMISÉE -->
+    <!-- BARRE DES RP -->
     <div class="rp-bar">
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">5k</p><p id="rp5" class="rp-val">--</p></div>
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">10k</p><p id="rp10" class="rp-val">--</p></div>
@@ -57,17 +54,35 @@
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">42k</p><p id="rp42" class="rp-val">--</p></div>
     </div>
 
+    <!-- STATS GLOBALES -->
+    <div id="statsBox" class="grid grid-cols-2 gap-4 mb-8"></div>
+
     <div id="raceList"></div>
 </div>
 
-<!-- FORMULAIRE -->
+<!-- FORMULAIRE COMPLET -->
 <div id="formModal" class="modal">
     <div class="flex justify-between items-center mb-8">
-        <h2 class="text-2xl font-black italic uppercase">Nouvelle Course</h2>
+        <h2 class="text-2xl font-black italic uppercase">Ajouter une course</h2>
         <button onclick="closeForm()" class="text-slate-400 text-2xl">✕</button>
     </div>
     
-    <div class="field"><label>Nom de la course</label><input type="text" id="fName" placeholder="Ex: Marathon de Paris"></div>
+    <div class="field"><label>Nom de l'épreuve</label><input type="text" id="fName" placeholder="Ex: Marathon de Paris"></div>
+    
+    <div class="grid grid-cols-2 gap-4">
+        <div class="field"><label>Date</label><input type="date" id="fDate"></div>
+        <div class="field">
+            <label>Format</label>
+            <select id="fCat" onchange="autoDist()">
+                <option value="Autre">Autre</option>
+                <option value="5 KM">5 KM</option>
+                <option value="10 KM">10 KM</option>
+                <option value="Semi">Semi</option>
+                <option value="Marathon">Marathon</option>
+                <option value="Trail">Trail</option>
+            </select>
+        </div>
+    </div>
     
     <div class="grid grid-cols-2 gap-4">
         <div class="field"><label>Distance (KM)</label><input type="number" id="fDist" step="0.01" placeholder="0.00"></div>
@@ -76,24 +91,24 @@
 
     <div class="grid grid-cols-2 gap-4 mb-8">
         <label class="upload-zone cursor-pointer" id="up1">
-            <span id="txt1" class="text-[10px] font-black uppercase">Dossard</span>
+            <span id="txt1" class="text-[10px] font-black uppercase">Photo Dossard</span>
             <input type="file" accept="image/*" class="hidden" onchange="uploadFile(this, 1)">
         </label>
         <label class="upload-zone cursor-pointer" id="up2">
-            <span id="txt2" class="text-[10px] font-black uppercase">Course</span>
+            <span id="txt2" class="text-[10px] font-black uppercase">Photo Course</span>
             <input type="file" accept="image/*" class="hidden" onchange="uploadFile(this, 2)">
         </label>
     </div>
 
-    <button id="saveBtn" onclick="saveEntry()" class="btn-joy italic">Enregistrer la performance</button>
+    <button id="saveBtn" onclick="saveEntry()" class="btn-joy italic">Enregistrer</button>
 </div>
 
 <!-- SELECTEUR PROFIL -->
-<div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.98);">
+<div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center;">
     <div class="w-full max-w-[280px] text-center">
-        <h3 class="font-black text-3xl mb-8 italic uppercase">Qui court ?</h3>
-        <button onclick="selectProfile('Vincent')" class="btn-joy py-6 text-xl mb-4">VINCENT</button>
-        <button onclick="selectProfile('Albane')" class="btn-joy py-6 text-xl" style="background: linear-gradient(135deg, #6366f1, #a855f7);">ALBANE</button>
+        <h3 class="font-black text-3xl mb-8 italic uppercase text-slate-800">Qui court ?</h3>
+        <button onclick="selectProfile('Vincent')" class="btn-joy py-6 text-xl mb-4 w-full">VINCENT</button>
+        <button onclick="selectProfile('Albane')" class="btn-joy py-6 text-xl w-full" style="background: linear-gradient(135deg, #6366f1, #a855f7);">ALBANE</button>
     </div>
 </div>
 
@@ -104,7 +119,6 @@
     let img1 = "", img2 = "";
     let isUploading = false;
 
-    // Formatage HH:MM:SS
     function formatTime(input) {
         let v = input.value.replace(/\D/g, '');
         if (v.length > 6) v = v.slice(0, 6);
@@ -113,42 +127,50 @@
         input.value = v;
     }
 
-    // Nettoyage de l'affichage (enlève les 00: de gauche)
     function cleanT(t) {
         if(!t) return "--";
         return t.replace(/^00:/, '');
+    }
+
+    function autoDist() {
+        const c = document.getElementById('fCat').value;
+        const d = document.getElementById('fDist');
+        if(c==="5 KM") d.value="5.00";
+        else if(c==="10 KM") d.value="10.00";
+        else if(c==="Semi") d.value="21.10";
+        else if(c==="Marathon") d.value="42.20";
     }
 
     function selectProfile(p) {
         currentProfile = p;
         localStorage.setItem('active_profile_race', p);
         document.getElementById('profileModal').style.display = 'none';
-        document.getElementById('displayProfile').innerText = "Profil Actif : " + p;
+        document.getElementById('displayProfile').innerText = "Session : " + p;
         render();
     }
 
-    if(currentProfile) selectProfile(currentProfile);
+    if(currentProfile) selectProfile(currentProfile); else document.getElementById('profileModal').style.display = 'flex';
 
     function openSelector() { document.getElementById('profileModal').style.display = 'flex'; }
+    
     function openForm() { 
         img1 = ""; img2 = ""; 
         document.getElementById('saveBtn').disabled = false;
-        document.querySelectorAll('.upload-zone').forEach(z => { z.classList.remove('active'); });
-        document.getElementById('txt1').innerText = "Dossard";
-        document.getElementById('txt2').innerText = "Course";
+        document.querySelectorAll('.upload-zone').forEach(z => z.classList.remove('active'));
+        document.getElementById('txt1').innerText = "Photo Dossard";
+        document.getElementById('txt2').innerText = "Photo Course";
         document.getElementById('formModal').style.display = 'block'; 
     }
+    
     function closeForm() { document.getElementById('formModal').style.display = 'none'; }
 
-    // Upload vers Cloudinary
     async function uploadFile(input, num) {
         const file = input.files[0]; if(!file) return;
         const zone = document.getElementById('up' + num);
         const txt = document.getElementById('txt' + num);
         const btn = document.getElementById('saveBtn');
 
-        isUploading = true;
-        btn.disabled = true;
+        isUploading = true; btn.disabled = true;
         txt.innerText = "ENVOI...";
 
         const fd = new FormData();
@@ -164,15 +186,14 @@
         } catch(e) {
             txt.innerText = "ERREUR";
         } finally {
-            isUploading = false;
-            btn.disabled = false;
+            isUploading = false; btn.disabled = false;
         }
     }
 
     function saveEntry() {
         if(isUploading) return;
         const name = document.getElementById('fName').value;
-        if(!name) return alert("Nom manquant");
+        if(!name) return alert("Nom de l'épreuve requis");
 
         const key = 'data_v32_' + currentProfile;
         const data = JSON.parse(localStorage.getItem(key) || "[]");
@@ -180,11 +201,12 @@
         data.unshift({
             id: Date.now(),
             n: name,
+            d: document.getElementById('fDate').value || new Date().toISOString().split('T')[0],
+            c: document.getElementById('fCat').value,
             k: parseFloat(document.getElementById('fDist').value || 0),
             t: document.getElementById('fTime').value || "00:00:00",
             i1: img1,
-            i2: img2,
-            d: new Date().toLocaleDateString('fr-FR')
+            i2: img2
         });
 
         localStorage.setItem(key, JSON.stringify(data));
@@ -196,27 +218,31 @@
         const data = JSON.parse(localStorage.getItem('data_v32_' + currentProfile) || "[]");
         const list = document.getElementById('raceList');
         
-        // Calcul RP
-        const records = { "5": null, "10": null, "21.1": null, "42.2": null };
+        // Stats et RP
+        const records = { "5.00": null, "10.00": null, "21.10": null, "42.20": null };
+        let totalKm = 0;
+
         data.forEach(r => {
-            const dist = parseFloat(r.k);
-            const timeParts = r.t.split(':').map(Number);
-            const totalSec = (timeParts.length === 3) ? (timeParts[0]*3600 + timeParts[1]*60 + timeParts[2]) : (timeParts[0]*60 + timeParts[1]);
+            totalKm += parseFloat(r.k || 0);
+            const distKey = parseFloat(r.k).toFixed(2);
+            const tParts = r.t.split(':').map(Number);
+            const sec = (tParts.length === 3) ? (tParts[0]*3600 + tParts[1]*60 + tParts[2]) : (tParts[0]*60 + tParts[1]);
             
-            // On vérifie les distances standards
-            for (let target in records) {
-                if (Math.abs(dist - parseFloat(target)) < 0.2) {
-                    if (!records[target] || totalSec < records[target].sec) {
-                        records[target] = { sec: totalSec, text: r.t };
-                    }
-                }
+            if (records[distKey] === undefined) return;
+            if (!records[distKey] || sec < records[distKey].sec) {
+                records[distKey] = { sec, text: r.t };
             }
         });
 
-        document.getElementById('rp5').innerText = cleanT(records["5"]?.text);
-        document.getElementById('rp10').innerText = cleanT(records["10"]?.text);
-        document.getElementById('rp21').innerText = cleanT(records["21.1"]?.text);
-        document.getElementById('rp42').innerText = cleanT(records["42.2"]?.text);
+        document.getElementById('rp5').innerText = cleanT(records["5.00"]?.text);
+        document.getElementById('rp10').innerText = cleanT(records["10.00"]?.text);
+        document.getElementById('rp21').innerText = cleanT(records["21.10"]?.text);
+        document.getElementById('rp42').innerText = cleanT(records["42.20"]?.text);
+
+        document.getElementById('statsBox').innerHTML = `
+            <div class="bg-white p-5 rounded-[2rem] shadow-sm text-center border border-slate-50"><p class="text-xl font-black text-rose-500 italic">${data.length}</p><p class="text-[9px] font-black text-slate-300 uppercase">Courses</p></div>
+            <div class="bg-white p-5 rounded-[2rem] shadow-sm text-center border border-slate-50"><p class="text-xl font-black text-indigo-500 italic">${totalKm.toFixed(1)}</p><p class="text-[9px] font-black text-slate-300 uppercase">Total KM</p></div>
+        `;
 
         list.innerHTML = data.map(r => `
             <div class="card-race">
@@ -226,11 +252,11 @@
                     <img src="${r.i2 || 'https://via.placeholder.com/200x200?text=Course'}">
                 </div>
                 <div class="p-6">
-                    <p class="text-[10px] font-black text-rose-400 uppercase mb-1">${r.d}</p>
+                    <p class="text-[10px] font-black text-rose-400 uppercase mb-1">${r.d} • ${r.c}</p>
                     <h3 class="text-xl font-black text-slate-800 italic uppercase mb-4">${r.n}</h3>
-                    <div class="flex justify-between border-t border-slate-50 pt-4">
-                        <div><p class="text-[9px] font-black text-slate-300 uppercase">Distance</p><p class="text-lg font-black">${r.k}k</p></div>
-                        <div><p class="text-[9px] font-black text-slate-300 uppercase">Temps</p><p class="text-lg font-black italic">${cleanT(r.t)}</p></div>
+                    <div class="flex justify-between border-t border-slate-50 pt-4 font-black italic">
+                        <div><p class="text-[9px] text-slate-300 uppercase not-italic">Dist.</p>${r.k}k</div>
+                        <div><p class="text-[9px] text-slate-300 uppercase not-italic">Temps</p>${cleanT(r.t)}</div>
                     </div>
                 </div>
             </div>
