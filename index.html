@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Race Library Pro Ultra</title>
+    <title>Race Library Pro Max</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -30,17 +30,20 @@
 <body>
 
 <div class="max-w-md mx-auto p-6 pb-32">
-    <header class="flex justify-between items-center mb-8">
-        <div onclick="openSelector()" class="cursor-pointer">
+    <header class="flex justify-between items-start mb-8">
+        <div>
             <h1 class="text-2xl font-black italic tracking-tighter text-slate-800 uppercase">Race <span class="text-rose-500">Library</span></h1>
-            <p id="displayProfile" class="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Chargement...</p>
+            <button onclick="openSelector()" class="flex items-center gap-2 mt-1">
+                <span id="displayProfile" class="text-[10px] font-black uppercase tracking-widest text-indigo-500 italic">Chargement...</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-indigo-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
         </div>
         <button onclick="openForm()" class="w-14 h-14 bg-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </button>
     </header>
 
-    <!-- RP BAR -->
+    <!-- RECORDS (RP) -->
     <div class="rp-bar">
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">5k</p><p id="rp5" class="rp-val">--</p></div>
         <div class="rp-item"><p class="text-[9px] font-black text-rose-400 uppercase">10k</p><p id="rp10" class="rp-val">--</p></div>
@@ -51,14 +54,21 @@
     <!-- STATS -->
     <div id="statsBox" class="grid grid-cols-2 gap-4 mb-8"></div>
     
-    <!-- LISTE -->
+    <!-- LISTE DES COURSES -->
     <div id="raceList"></div>
+
+    <!-- MAINTENANCE / EXPORT -->
+    <div class="mt-12 pt-8 border-t border-slate-200 text-center">
+        <button onclick="exportData()" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-slate-200 px-4 py-2 rounded-full hover:bg-slate-50">
+            Exporter les données (Sauvegarde)
+        </button>
+    </div>
 </div>
 
-<!-- FORMULAIRE -->
+<!-- MODAL FORMULAIRE -->
 <div id="formModal" class="modal">
     <div class="flex justify-between items-center mb-8">
-        <h2 class="text-2xl font-black italic uppercase">Nouvelle Performance</h2>
+        <h2 class="text-2xl font-black italic uppercase">Nouvelle Course</h2>
         <button onclick="closeForm()" class="text-slate-400 text-2xl">✕</button>
     </div>
     
@@ -95,13 +105,13 @@
         </label>
     </div>
 
-    <button id="saveBtn" onclick="saveEntry()" class="btn-joy italic">Enregistrer</button>
+    <button id="saveBtn" onclick="saveEntry()" class="btn-joy italic">Enregistrer la performance</button>
 </div>
 
-<!-- PROFIL MODAL -->
-<div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center;">
+<!-- MODAL CHOIX PROFIL -->
+<div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95);">
     <div class="w-full max-w-[280px] text-center">
-        <h3 class="font-black text-3xl mb-8 italic uppercase">Qui court ?</h3>
+        <h3 class="font-black text-3xl mb-8 italic uppercase text-slate-800">Qui court ?</h3>
         <button onclick="selectProfile('Vincent')" class="btn-joy py-6 text-xl mb-4 w-full">VINCENT</button>
         <button onclick="selectProfile('Albane')" class="btn-joy py-6 text-xl w-full" style="background: linear-gradient(135deg, #6366f1, #a855f7);">ALBANE</button>
     </div>
@@ -121,8 +131,7 @@
         const txt = document.getElementById('txt' + num);
         const btn = document.getElementById('saveBtn');
 
-        isUploading = true;
-        btn.disabled = true;
+        isUploading = true; btn.disabled = true;
         txt.innerText = "CALCUL...";
 
         try {
@@ -130,12 +139,9 @@
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const maxSide = 1200;
-            let w = bitmap.width;
-            let h = bitmap.height;
-
+            let w = bitmap.width; let h = bitmap.height;
             if (w > h && w > maxSide) { h = (h * maxSide) / w; w = maxSide; }
             else if (h > maxSide) { w = (w * maxSide) / h; h = maxSide; }
-
             canvas.width = w; canvas.height = h;
             ctx.drawImage(bitmap, 0, 0, w, h);
             
@@ -144,12 +150,7 @@
                 const fd = new FormData();
                 fd.append('file', blob);
                 fd.append('upload_preset', UPLOAD_PRESET);
-
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                    method: 'POST',
-                    body: fd
-                });
-                
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
                 const data = await res.json();
                 if(data.secure_url) {
                     if(num === 1) currentPhotos.i1 = data.secure_url; 
@@ -157,14 +158,35 @@
                     txt.innerText = "PRÊT ✓";
                     zone.classList.add('active');
                 }
-                isUploading = false;
-                btn.disabled = false;
+                isUploading = false; btn.disabled = false;
             }, 'image/jpeg', 0.7);
         } catch (e) {
             txt.innerText = "ERREUR";
-            isUploading = false;
-            btn.disabled = false;
+            isUploading = false; btn.disabled = false;
         }
+    }
+
+    // --- FONCTIONS PROFIL & DATA ---
+    function selectProfile(p) {
+        currentProfile = p;
+        localStorage.setItem('active_profile_race', p);
+        document.getElementById('profileModal').style.display = 'none';
+        document.getElementById('displayProfile').innerText = "Session : " + p;
+        render();
+    }
+
+    function openSelector() { document.getElementById('profileModal').style.display = 'flex'; }
+
+    function exportData() {
+        const vincent = localStorage.getItem('data_v32_Vincent') || "[]";
+        const albane = localStorage.getItem('data_v32_Albane') || "[]";
+        const allData = JSON.stringify({ Vincent: JSON.parse(vincent), Albane: JSON.parse(albane) }, null, 2);
+        
+        const blob = new Blob([allData], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `sauvegarde_race_library_${new Date().toLocaleDateString()}.txt`;
+        a.click();
     }
 
     // --- LOGIQUE CORE ---
@@ -185,20 +207,15 @@
         if(map[c]) d.value = map[c];
     }
 
-    function selectProfile(p) {
-        currentProfile = p;
-        localStorage.setItem('active_profile_race', p);
-        document.getElementById('profileModal').style.display = 'none';
-        document.getElementById('displayProfile').innerText = "Session : " + p;
-        render();
-    }
-
     function openForm() { 
         currentPhotos = { i1: "", i2: "" }; 
         document.getElementById('saveBtn').disabled = false;
         document.querySelectorAll('.upload-zone').forEach(z => z.classList.remove('active'));
         document.getElementById('txt1').innerText = "Photo Dossard";
         document.getElementById('txt2').innerText = "Photo Médaille";
+        document.getElementById('fName').value = "";
+        document.getElementById('fDist').value = "";
+        document.getElementById('fTime').value = "";
         document.getElementById('formModal').style.display = 'block'; 
     }
     
@@ -208,10 +225,8 @@
         if(isUploading) return;
         const name = document.getElementById('fName').value;
         if(!name) return alert("Nom requis");
-
         const key = 'data_v32_' + currentProfile;
         const data = JSON.parse(localStorage.getItem(key) || "[]");
-        
         data.unshift({
             id: Date.now(),
             n: name,
@@ -219,10 +234,8 @@
             c: document.getElementById('fCat').value,
             k: parseFloat(document.getElementById('fDist').value || 0),
             t: document.getElementById('fTime').value || "00:00:00",
-            i1: currentPhotos.i1,
-            i2: currentPhotos.i2
+            i1: currentPhotos.i1, i2: currentPhotos.i2
         });
-
         localStorage.setItem(key, JSON.stringify(data));
         closeForm();
         render();
@@ -258,8 +271,8 @@
             <div class="card-race">
                 <button onclick="deleteEntry(${r.id})" class="badge-delete">✕</button>
                 <div class="img-box">
-                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center bg-slate-50 text-[9px] font-bold text-slate-300">DOSSARD</div>`}
-                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center bg-slate-50 text-[9px] font-bold text-slate-300">MÉDAILLE</div>`}
+                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center bg-slate-50 text-[9px] font-bold text-slate-300 uppercase">Dossard</div>`}
+                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center bg-slate-50 text-[9px] font-bold text-slate-300 uppercase">Médaille</div>`}
                 </div>
                 <div class="p-6">
                     <p class="text-[10px] font-black text-rose-400 uppercase mb-1">${r.d} • ${r.c}</p>
@@ -274,7 +287,7 @@
     }
 
     function deleteEntry(id) {
-        if(confirm("Supprimer ?")) {
+        if(confirm("Supprimer cette performance ?")) {
             const key = 'data_v32_' + currentProfile;
             let data = JSON.parse(localStorage.getItem(key) || "[]");
             data = data.filter(r => r.id !== id);
