@@ -1,235 +1,969 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Race Library - Vincent Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root { --main: #ff5e62; --sub: #ff9966; --bg: #f8fafc; }
-        body { background-color: var(--bg); color: #1e293b; font-family: sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 40px; }
-        
-        .card-race { background: white; border-radius: 24px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); position: relative; overflow: hidden; display: flex; flex-direction: column; }
-        .card-header { padding: 20px 20px 10px 20px; }
-        .card-body { padding: 0 20px 20px 20px; border-bottom: 1px solid #f1f5f9; }
-        
-        .img-container { display: grid; grid-template-columns: 1fr 1fr; height: 160px; background: #f1f5f9; gap: 2px; }
-        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Race Library · Vincent</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #D85A30;
+  --accent-light: #FAECE7;
+  --accent-mid: #F0997B;
+  --accent-dark: #712B13;
+  --teal: #1D9E75;
+  --teal-light: #E1F5EE;
+  --bg: #F4F2ED;
+  --surface: #FFFFFF;
+  --surface2: #F1EFE8;
+  --surface3: #E8E5DC;
+  --text: #1A1916;
+  --text2: #5F5E5A;
+  --text3: #888780;
+  --border: #D3D1C7;
+  --radius: 22px;
+  --radius-sm: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 80px; }
 
-        .rp-bar { background: white; border-radius: 22px; padding: 12px; margin-bottom: 25px; display: flex; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
-        .rp-item { flex: 1; text-align: center; border-right: 1px solid #f1f5f9; cursor: pointer; border-radius: 12px; padding: 5px 0; }
-        .rp-item:last-child { border-right: none; }
-        .rp-item.active { background: #fff1f2; }
-        .rp-item.active p { color: var(--main) !important; }
-        
-        .modal { position: fixed; inset: 0; background: white; z-index: 1000; overflow-y: auto; padding: 24px; display: none; }
-        .field { background: #f1f5f9; border-radius: 18px; padding: 12px 18px; margin-bottom: 15px; }
-        .field label { display: block; font-size: 10px; font-weight: 900; color: var(--main); text-transform: uppercase; margin-bottom: 4px; }
-        .field input, .field select { background: transparent; border: none; width: 100%; font-weight: 700; outline: none; font-size: 16px; color: #1e293b; }
-        
-        .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 20px; padding: 18px; width: 100%; text-transform: uppercase; border: none; }
-        .upload-zone { border: 2px dashed #e2e8f0; border-radius: 18px; padding: 15px; text-align: center; font-size: 10px; font-weight: 900; color: #94a3b8; }
-        .upload-zone.active { border-color: #10b981; background: #ecfdf5; color: #10b981; }
-    </style>
+/* ── HEADER ── */
+.app-header {
+  background: var(--surface);
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 200;
+}
+.header-row1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.logo-wrap span {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-style: italic;
+  font-size: 30px; letter-spacing: -0.5px; line-height: 1;
+  color: var(--text);
+}
+.logo-wrap small {
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--teal);
+}
+.header-actions { display: flex; gap: 8px; }
+.btn-icon {
+  width: 38px; height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-icon:hover { background: var(--surface3); }
+.btn-add {
+  width: 42px; height: 42px;
+  border: none; border-radius: 12px;
+  background: var(--accent);
+  color: white; font-size: 26px; font-weight: 300;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.btn-add:active { transform: scale(0.93); background: var(--accent-dark); }
+
+/* Search */
+.search-wrap { position: relative; }
+.search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.35; pointer-events: none; }
+#searchInput {
+  width: 100%; padding: 9px 14px 9px 36px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text);
+  outline: none; transition: border-color 0.15s, background 0.15s;
+}
+#searchInput:focus { border-color: var(--accent-mid); background: var(--surface); }
+#searchInput::placeholder { color: var(--text3); }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 1px; overflow: hidden;
+}
+.stat-cell {
+  background: var(--surface);
+  padding: 11px 6px 9px;
+  text-align: center; cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.stat-cell:hover { background: var(--surface2); }
+.stat-cell.active { background: var(--accent-light); }
+.stat-cell.active::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2.5px; background: var(--accent);
+}
+.stat-cell .label {
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 3px;
+}
+.stat-cell .val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-style: italic;
+  font-size: 17px; color: var(--text);
+  white-space: nowrap;
+}
+.stat-cell.active .val { color: var(--accent); }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px 0;
+  gap: 10px;
+}
+.count-label { font-size: 12px; color: var(--text3); font-weight: 500; white-space: nowrap; }
+.sort-select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  color: var(--text2);
+  padding: 5px 10px;
+  outline: none; cursor: pointer;
+  -webkit-appearance: none;
+}
+
+/* Filter pill */
+.filter-pill {
+  display: none; align-items: center; gap: 8px;
+  background: var(--accent-light);
+  border-radius: 20px; padding: 5px 12px 5px 10px;
+  margin: 10px 16px 0;
+}
+.filter-pill.visible { display: flex; }
+.filter-pill span { font-size: 11px; font-weight: 600; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.08em; }
+.filter-pill button { border: none; background: none; color: var(--accent); cursor: pointer; font-size: 14px; font-weight: 700; line-height: 1; padding: 0; }
+
+/* ── RACE LIST ── */
+.race-list { padding: 14px 16px 0; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 70px 24px;
+  animation: fadeIn 0.3s ease;
+}
+.empty-icon {
+  width: 64px; height: 64px;
+  background: var(--surface3);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+.empty-state h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; color: var(--text2); margin-bottom: 6px; }
+.empty-state p { font-size: 14px; color: var(--text3); line-height: 1.6; }
+
+/* ── RACE CARD ── */
+.race-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  position: relative;
+  animation: fadeIn 0.25s ease;
+  transition: transform 0.15s;
+}
+.race-card:active { transform: scale(0.99); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.card-top { padding: 15px 15px 12px; }
+.card-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.badge {
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 3px 9px; border-radius: 20px;
+}
+.badge-cat { background: var(--accent-light); color: var(--accent-dark); }
+.badge-pr { background: var(--teal-light); color: #085041; }
+.card-date { font-size: 11px; color: var(--text3); font-weight: 500; margin-left: auto; }
+.card-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-style: italic;
+  font-size: 23px; line-height: 1.05;
+  color: var(--text); padding-right: 28px;
+}
+
+.card-stats {
+  display: flex; gap: 0;
+  border-top: 1px solid var(--surface2);
+  margin-top: 2px;
+}
+.cs-item {
+  flex: 1; padding: 10px 15px 12px;
+  border-right: 1px solid var(--surface2);
+}
+.cs-item:last-child { border-right: none; }
+.cs-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 2px; }
+.cs-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-style: italic; font-size: 19px; color: var(--text);
+}
+.cs-val.accent { color: var(--accent); }
+.cs-val.teal { color: var(--teal); }
+
+.card-photos { display: grid; grid-template-columns: 1fr 1fr; height: 120px; gap: 2px; }
+.card-photos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-ph {
+  background: var(--surface2);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 5px;
+}
+.photo-ph span { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
+
+.btn-delete {
+  position: absolute; top: 13px; right: 13px;
+  width: 22px; height: 22px;
+  border: 1px solid var(--border); background: var(--surface);
+  border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); font-size: 10px; font-weight: 700;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+.btn-delete:hover { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+
+/* ── MODAL ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,25,22,0.6);
+  z-index: 500;
+  display: none; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.overlay.open { display: flex; }
+.sheet {
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  width: 100%; max-width: 520px;
+  max-height: 94vh; overflow-y: auto;
+  padding: 0 20px 44px;
+  animation: slideUp 0.28s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--surface3);
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+.sheet-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 0 22px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 22px;
+}
+.sheet-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-style: italic;
+  font-size: 26px; color: var(--text);
+}
+.btn-close {
+  width: 34px; height: 34px; border: 1px solid var(--border);
+  border-radius: 10px; background: var(--surface2);
+  color: var(--text2); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Form fields */
+.field-group { margin-bottom: 14px; }
+.field-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; display: block; }
+.field-input {
+  width: 100%; padding: 12px 16px;
+  background: var(--surface2);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 500; color: var(--text);
+  outline: none; transition: border-color 0.15s, background 0.15s;
+  -webkit-appearance: none;
+}
+.field-input:focus { border-color: var(--accent-mid); background: var(--surface); }
+.field-input::placeholder { color: var(--text3); font-weight: 400; }
+.field-select { cursor: pointer; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Upload zones */
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+.upload-zone {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 10px;
+  text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.upload-zone input { display: none; }
+.upload-zone:hover { border-color: var(--accent-mid); background: var(--accent-light); }
+.upload-zone.done { border-color: var(--teal); background: var(--teal-light); border-style: solid; }
+.upload-zone svg { opacity: 0.4; }
+.upload-zone.done svg { opacity: 0.7; }
+.upload-zone span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
+.upload-zone.done span { color: #085041; }
+
+/* Submit btn */
+.btn-submit {
+  width: 100%; padding: 16px;
+  background: var(--accent);
+  color: white; border: none; border-radius: var(--radius-sm);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-style: italic;
+  font-size: 19px; letter-spacing: 0.04em;
+  text-transform: uppercase; cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-submit:hover { background: var(--accent-dark); }
+.btn-submit:active { transform: scale(0.98); }
+.btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Error hint */
+.err-hint { font-size: 11px; color: var(--accent); font-weight: 500; margin-top: 4px; display: none; }
+.err-hint.visible { display: block; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: white;
+  font-size: 13px; font-weight: 500;
+  padding: 10px 20px; border-radius: 20px;
+  z-index: 999; opacity: 0; transition: opacity 0.25s, transform 0.25s;
+  white-space: nowrap; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
 </head>
 <body>
 
-<div class="max-w-md mx-auto p-6">
-    <header class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-2xl font-black italic uppercase tracking-tighter text-slate-800">Race <span class="text-rose-500">Library</span></h1>
-            <p class="text-[10px] font-black uppercase text-indigo-500 tracking-widest italic">Vincent - Performance Hub</p>
-        </div>
-        <div class="flex gap-2">
-            <!-- Bouton de Restauration si cache vidé -->
-            <button onclick="importData()" class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-white shadow-sm" title="Restaurer">🔄</button>
-            <button onclick="openForm()" class="w-14 h-14 bg-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg text-2xl">＋</button>
-        </div>
-    </header>
-
-    <div class="rp-bar">
-        <div class="rp-item" id="filter-5" onclick="toggleFilter('5 KM')"><p class="text-[9px] font-bold text-slate-400 uppercase">5k</p><p id="rp5" class="font-black text-slate-700 italic">--</p></div>
-        <div class="rp-item" id="filter-10" onclick="toggleFilter('10 KM')"><p class="text-[9px] font-bold text-slate-400 uppercase">10k</p><p id="rp10" class="font-black text-slate-700 italic">--</p></div>
-        <div class="rp-item" id="filter-Semi" onclick="toggleFilter('Semi')"><p class="text-[9px] font-bold text-slate-400 uppercase">21k</p><p id="rp21" class="font-black text-slate-700 italic">--</p></div>
-        <div class="rp-item" id="filter-Marathon" onclick="toggleFilter('Marathon')"><p class="text-[9px] font-bold text-slate-400 uppercase">42k</p><p id="rp42" class="font-black text-slate-700 italic">--</p></div>
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-row1">
+    <div class="logo-wrap">
+      <span>Race <span style="color:var(--accent)">Library</span></span>
+      <small>Vincent · Performance Hub</small>
     </div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="exportData()" title="Exporter">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="btn-icon" onclick="importData()" title="Restaurer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+      <button class="btn-add" onclick="openForm()" title="Ajouter">＋</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Rechercher une course…" oninput="onSearch()" autocomplete="off">
+  </div>
+</header>
 
-    <div id="raceList"></div>
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-cell" id="sc-5" onclick="toggleFilter('5 KM')">
+    <div class="label">5 km</div>
+    <div class="val" id="rp5">—</div>
+  </div>
+  <div class="stat-cell" id="sc-10" onclick="toggleFilter('10 KM')">
+    <div class="label">10 km</div>
+    <div class="val" id="rp10">—</div>
+  </div>
+  <div class="stat-cell" id="sc-Semi" onclick="toggleFilter('Semi')">
+    <div class="label">21 km</div>
+    <div class="val" id="rp21">—</div>
+  </div>
+  <div class="stat-cell" id="sc-Marathon" onclick="toggleFilter('Marathon')">
+    <div class="label">42 km</div>
+    <div class="val" id="rp42">—</div>
+  </div>
 </div>
 
-<!-- FORMULAIRE -->
-<div id="formModal" class="modal">
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-2xl font-black italic uppercase">Nouvelle Course</h2>
-        <button onclick="closeForm()" class="text-slate-400 text-2xl">✕</button>
-    </div>
-    <div class="field"><label>Nom de l'épreuve</label><input type="text" id="fName" placeholder="Ex: Semi de Paris"></div>
-    <div class="grid grid-cols-2 gap-4">
-        <div class="field"><label>Format</label>
-            <select id="fCat" onchange="autoDist()">
-                <option value="Autre">Autre</option><option value="5 KM">5 KM</option>
-                <option value="10 KM">10 KM</option><option value="Semi">Semi</option>
-                <option value="Marathon">Marathon</option>
-            </select>
-        </div>
-        <div class="field"><label>Distance (km)</label><input type="number" id="fDist" step="0.01"></div>
-    </div>
-    <div class="field"><label>Temps (HH:MM:SS)</label><input type="text" id="fTime" placeholder="00:00:00" oninput="valTime(this)"></div>
-    <div class="grid grid-cols-2 gap-4 mb-8">
-        <label class="upload-zone cursor-pointer" id="up1">Dossard<input type="file" accept="image/*" class="hidden" onchange="upload(this, 1)"></label>
-        <label class="upload-zone cursor-pointer" id="up2">Médaille<input type="file" accept="image/*" class="hidden" onchange="upload(this, 2)"></label>
-    </div>
-    <button onclick="saveEntry()" id="saveBtn" class="btn-joy italic text-lg">Enregistrer</button>
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <span class="count-label" id="countLabel">— courses</span>
+  <select class="sort-select" id="sortSelect" onchange="render()">
+    <option value="date-desc">Plus récentes</option>
+    <option value="date-asc">Plus anciennes</option>
+    <option value="time-asc">Meilleur chrono</option>
+    <option value="dist-desc">Distance ↓</option>
+  </select>
 </div>
+
+<!-- FILTER PILL -->
+<div class="filter-pill" id="filterPill">
+  <span id="filterPillLabel"></span>
+  <button onclick="clearFilter()">✕</button>
+</div>
+
+<!-- RACE LIST -->
+<div class="race-list" id="raceList"></div>
+
+<!-- FORM MODAL -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">Nouvelle course</span>
+      <button class="btn-close" onclick="closeForm()">✕</button>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Nom de l'épreuve *</label>
+      <input type="text" class="field-input" id="fName" placeholder="Ex : Semi de Paris">
+      <p class="err-hint" id="errName">Nom requis</p>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Date de la course *</label>
+      <input type="date" class="field-input" id="fDate">
+      <p class="err-hint" id="errDate">Date requise</p>
+    </div>
+
+    <div class="row2">
+      <div class="field-group">
+        <label class="field-label">Format</label>
+        <select class="field-input field-select" id="fCat" onchange="autoDist()">
+          <option value="Autre">Autre</option>
+          <option value="5 KM">5 KM</option>
+          <option value="10 KM">10 KM</option>
+          <option value="Semi">Semi</option>
+          <option value="Marathon">Marathon</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Distance (km)</label>
+        <input type="number" class="field-input" id="fDist" step="0.01" placeholder="21.10">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Temps officiel</label>
+      <input type="text" class="field-input" id="fTime" placeholder="HH:MM:SS" oninput="valTime(this)" maxlength="8">
+      <p class="err-hint" id="errTime">Format invalide (HH:MM:SS)</p>
+    </div>
+
+    <div class="upload-grid">
+      <label class="upload-zone" id="up1">
+        <input type="file" accept="image/*" onchange="upload(this, 1)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span id="up1-label">Dossard</span>
+      </label>
+      <label class="upload-zone" id="up2">
+        <input type="file" accept="image/*" onchange="upload(this, 2)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        <span id="up2-label">Médaille</span>
+      </label>
+    </div>
+
+    <button class="btn-submit" id="submitBtn" onclick="saveEntry()">Enregistrer</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HIDDEN FILE INPUT for import -->
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(this)">
 
 <script>
-    const CLOUD_NAME = "dt7tr0sec"; 
-    const UPLOAD_PRESET = "xlgyluge";
-    const DB_KEY = 'data_v33_Vincent';
-    let photos = { i1: "", i2: "" };
-    let uploading = false;
-    let activeFilter = null;
+/* ════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════ */
+const CLOUD_NAME   = "dt7tr0sec";
+const UPLOAD_PRESET = "xlgyluge";
+const LS_KEY       = "racelib_v1";
+const IDB_DB       = "racelib";
+const IDB_STORE    = "races";
+const DIST_MAP     = { "5 KM": 5.00, "10 KM": 10.00, "Semi": 21.0975, "Marathon": 42.195 };
+const PR_DIST      = { "5.00": null, "10.00": null, "21.10": null, "42.20": null };
 
-    function cleanTime(t) {
-        if(!t || t === "00:00:00") return "--";
-        return t.replace(/^00:/, '');
-    }
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let db          = null;
+let allRaces    = [];
+let activeFilter = null;
+let searchQuery  = "";
+let uploading    = false;
+let photos       = { i1: "", i2: "" };
 
-    function toggleFilter(cat) {
-        document.querySelectorAll('.rp-item').forEach(i => i.classList.remove('active'));
-        if (activeFilter === cat) { activeFilter = null; } 
-        else { 
-            activeFilter = cat; 
-            const safeId = cat.replace(' KM', '');
-            document.getElementById('filter-' + safeId).classList.add('active');
-        }
-        render();
-    }
+/* ════════════════════════════════════════
+   INDEXEDDB
+════════════════════════════════════════ */
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_DB, 1);
+    req.onupgradeneeded = e => {
+      const store = e.target.result.createObjectStore(IDB_STORE, { keyPath: "id" });
+      store.createIndex("raceDate", "raceDate", { unique: false });
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(db); };
+    req.onerror   = () => reject(req.error);
+  });
+}
 
-    function openForm() { 
-        photos = { i1: "", i2: "" };
-        document.querySelectorAll('.upload-zone').forEach(z => {z.classList.remove('active'); z.innerText = (z.id==="up1"?"Dossard":"Médaille")});
-        document.getElementById('formModal').style.display = 'block'; 
-    }
-    function closeForm() { document.getElementById('formModal').style.display = 'none'; }
+function idbGetAll() {
+  return new Promise((resolve, reject) => {
+    if (!db) { resolve([]); return; }
+    const tx  = db.transaction(IDB_STORE, "readonly");
+    const req = tx.objectStore(IDB_STORE).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror   = () => resolve([]);
+  });
+}
 
-    function autoDist() {
-        const map = {"5 KM":"5.00","10 KM":"10.00","Semi":"21.10","Marathon":"42.20"};
-        const c = document.getElementById('fCat').value;
-        if(map[c]) document.getElementById('fDist').value = map[c];
-    }
+function idbPut(race) {
+  return new Promise((resolve) => {
+    if (!db) { resolve(); return; }
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).put(race);
+    tx.oncomplete = resolve;
+    tx.onerror    = resolve;
+  });
+}
 
-    function valTime(i) {
-        let v = i.value.replace(/\D/g, '');
-        if (v.length >= 5) v = v.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
-        else if (v.length >= 3) v = v.replace(/(\d{2})(\d{2})/, "$1:$2");
-        i.value = v;
-    }
+function idbDelete(id) {
+  return new Promise((resolve) => {
+    if (!db) { resolve(); return; }
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror    = resolve;
+  });
+}
 
-    async function upload(input, num) {
-        const file = input.files[0]; if(!file) return;
-        const zone = document.getElementById('up' + num);
-        uploading = true; zone.innerText = "...";
-        const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', UPLOAD_PRESET);
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {method:'POST', body:fd});
-            const d = await res.json();
-            photos['i' + num] = d.secure_url;
-            zone.classList.add('active'); zone.innerText = "OK ✓";
-        } catch(e) { zone.innerText = "ERR"; }
-        finally { uploading = false; }
-    }
+function idbBulkPut(races) {
+  return new Promise((resolve) => {
+    if (!db || !races.length) { resolve(); return; }
+    const tx    = db.transaction(IDB_STORE, "readwrite");
+    const store = tx.objectStore(IDB_STORE);
+    races.forEach(r => store.put(r));
+    tx.oncomplete = resolve;
+    tx.onerror    = resolve;
+  });
+}
 
-    function saveEntry() {
-        if(uploading) return;
-        const n = document.getElementById('fName').value;
-        if(!n) return;
-        const data = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
-        data.unshift({
-            id: Date.now(), n: n,
-            d: new Date().toLocaleDateString('fr-FR'),
-            c: document.getElementById('fCat').value,
-            k: document.getElementById('fDist').value || 0,
-            t: document.getElementById('fTime').value || "00:00:00",
-            i1: photos.i1, i2: photos.i2
-        });
-        localStorage.setItem(DB_KEY, JSON.stringify(data));
-        
-        // AUTO-SAVE DANS LE PRESSE PAPIER POUR FACILITER LA COPIE
-        navigator.clipboard.writeText(JSON.stringify(data));
-        alert("Course enregistrée ! Sauvegarde copiée dans le presse-papier par sécurité.");
-        
-        closeForm(); render();
-    }
+/* ════════════════════════════════════════
+   PERSISTENCE HELPERS
+════════════════════════════════════════ */
+function lsSave(races) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(races)); } catch(_) {}
+}
 
-    // --- FONCTION DE RÉCUPÉRATION SI CACHE VIDÉ ---
-    function importData() {
-        const backup = prompt("Colle ton texte de sauvegarde ici pour tout restaurer :");
-        if (backup) {
-            try {
-                const parsed = JSON.parse(backup);
-                if (Array.isArray(parsed)) {
-                    localStorage.setItem(DB_KEY, backup);
-                    render();
-                    alert("Restauration réussie !");
-                }
-            } catch(e) { alert("Format de sauvegarde invalide."); }
-        }
-    }
+function lsLoad() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch(_) { return []; }
+}
 
-    function deleteEntry(id) {
-        if(confirm("Supprimer ?")) {
-            let data = JSON.parse(localStorage.getItem(DB_KEY));
-            data = data.filter(r => r.id !== id);
-            localStorage.setItem(DB_KEY, JSON.stringify(data));
-            render();
-        }
-    }
+async function loadRaces() {
+  let idbRaces = await idbGetAll();
+  const lsRaces = lsLoad();
 
-    function render() {
-        let data = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
-        const list = document.getElementById('raceList');
-        const recs = {"5.00":"--", "10.00":"--", "21.10":"--", "42.20":"--"};
+  // Merge: IDB is source of truth, but if IDB empty and LS has data → seed IDB
+  if (idbRaces.length === 0 && lsRaces.length > 0) {
+    await idbBulkPut(lsRaces);
+    idbRaces = lsRaces;
+  }
+  allRaces = idbRaces;
+  // Keep LS in sync
+  lsSave(allRaces);
+}
 
-        data.forEach(r => {
-            const dk = parseFloat(r.k).toFixed(2);
-            if(recs[dk] === "--" || (r.t !== "00:00:00" && r.t < recs[dk])) recs[dk] = r.t;
-        });
+async function persistAdd(race) {
+  allRaces.unshift(race);
+  await idbPut(race);
+  lsSave(allRaces);
+}
 
-        document.getElementById('rp5').innerText = cleanTime(recs["5.00"]);
-        document.getElementById('rp10').innerText = cleanTime(recs["10.00"]);
-        document.getElementById('rp21').innerText = cleanTime(recs["21.10"]);
-        document.getElementById('rp42').innerText = cleanTime(recs["42.20"]);
+async function persistDelete(id) {
+  allRaces = allRaces.filter(r => r.id !== id);
+  await idbDelete(id);
+  lsSave(allRaces);
+}
 
-        if (activeFilter) data = data.filter(r => r.c === activeFilter);
+/* ════════════════════════════════════════
+   TIME HELPERS
+════════════════════════════════════════ */
+function timeToSec(t) {
+  if (!t || t === "--") return Infinity;
+  const parts = t.split(":").map(Number);
+  if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if (parts.length === 2) return parts[0]*60 + parts[1];
+  return Infinity;
+}
 
-        list.innerHTML = data.map(r => `
-            <div class="card-race">
-                <button onclick="deleteEntry(${r.id})" class="absolute top-4 right-4 text-slate-300 font-bold z-10">✕</button>
-                <div class="card-header">
-                    <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest">${r.d} • ${r.c}</p>
-                    <h2 class="text-xl font-black italic uppercase text-slate-800 leading-tight pr-6">${r.n}</h2>
-                </div>
-                <div class="card-body">
-                    <div class="flex gap-6 mt-2">
-                        <div>
-                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Distance</p>
-                            <p class="font-black italic text-lg">${r.k}km</p>
-                        </div>
-                        <div>
-                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Chrono</p>
-                            <p class="font-black italic text-lg text-rose-500">${cleanTime(r.t)}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="img-container">
-                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Dossard</div>`}
-                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Médaille</div>`}
-                </div>
-            </div>`).join('');
-    }
+function cleanTime(t) {
+  if (!t || t === "00:00:00") return "--";
+  return t.startsWith("00:") ? t.slice(3) : t;
+}
 
+function calcPace(timeStr, distKm) {
+  const dist = parseFloat(distKm);
+  if (!timeStr || timeStr === "00:00:00" || !dist || dist === 0) return "--";
+  const secs = timeToSec(timeStr);
+  if (secs === Infinity) return "--";
+  const paceSecPerKm = secs / dist;
+  const m = Math.floor(paceSecPerKm / 60);
+  const s = Math.round(paceSecPerKm % 60).toString().padStart(2, "0");
+  return `${m}'${s}"/km`;
+}
+
+function isValidTime(t) {
+  if (!t) return true; // optional
+  return /^\d{2}:\d{2}:\d{2}$/.test(t);
+}
+
+/* ════════════════════════════════════════
+   BEST TIMES (PR)
+════════════════════════════════════════ */
+function computePRs() {
+  const prs = { "5.00": Infinity, "10.00": Infinity, "21.10": Infinity, "42.20": Infinity };
+  const prId = { "5.00": null, "10.00": null, "21.10": null, "42.20": null };
+
+  allRaces.forEach(r => {
+    const dk = parseFloat(r.dist).toFixed(2);
+    if (prs[dk] === undefined) return;
+    const s = timeToSec(r.time);
+    if (s < prs[dk]) { prs[dk] = s; prId[dk] = r.id; }
+  });
+
+  document.getElementById("rp5").textContent  = prs["5.00"]  < Infinity ? cleanTime(allRaces.find(r=>r.id===prId["5.00"])?.time  || "--") : "—";
+  document.getElementById("rp10").textContent = prs["10.00"] < Infinity ? cleanTime(allRaces.find(r=>r.id===prId["10.00"])?.time || "--") : "—";
+  document.getElementById("rp21").textContent = prs["21.10"] < Infinity ? cleanTime(allRaces.find(r=>r.id===prId["21.10"])?.time || "--") : "—";
+  document.getElementById("rp42").textContent = prs["42.20"] < Infinity ? cleanTime(allRaces.find(r=>r.id===prId["42.20"])?.time || "--") : "—";
+
+  return prId;
+}
+
+/* ════════════════════════════════════════
+   RENDER
+════════════════════════════════════════ */
+function getFiltered() {
+  let data = [...allRaces];
+
+  if (activeFilter) data = data.filter(r => r.cat === activeFilter);
+  if (searchQuery)  data = data.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const sort = document.getElementById("sortSelect").value;
+  data.sort((a, b) => {
+    if (sort === "date-desc") return (b.raceDate || b.id) > (a.raceDate || a.id) ? 1 : -1;
+    if (sort === "date-asc")  return (a.raceDate || a.id) > (b.raceDate || b.id) ? 1 : -1;
+    if (sort === "time-asc")  return timeToSec(a.time) - timeToSec(b.time);
+    if (sort === "dist-desc") return parseFloat(b.dist) - parseFloat(a.dist);
+    return 0;
+  });
+
+  return data;
+}
+
+function render() {
+  const prIds = computePRs();
+  const data  = getFiltered();
+  const list  = document.getElementById("raceList");
+  const n     = data.length;
+
+  document.getElementById("countLabel").textContent = `${n} course${n !== 1 ? "s" : ""}`;
+
+  // Filter pill
+  const pill = document.getElementById("filterPill");
+  if (activeFilter) {
+    pill.classList.add("visible");
+    document.getElementById("filterPillLabel").textContent = activeFilter;
+  } else {
+    pill.classList.remove("visible");
+  }
+
+  // Stat bar active state
+  document.querySelectorAll(".stat-cell").forEach(c => c.classList.remove("active"));
+  if (activeFilter) {
+    const key = activeFilter.replace(" KM", "");
+    const el = document.getElementById("sc-" + key);
+    if (el) el.classList.add("active");
+  }
+
+  if (data.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3)">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <h3>${activeFilter || searchQuery ? "Aucun résultat" : "Aucune course"}</h3>
+        <p>${activeFilter || searchQuery ? "Modifie ta recherche ou ton filtre." : "Ajoute ta première course\nen appuyant sur le ＋"}</p>
+      </div>`;
+    return;
+  }
+
+  // Build cards (document fragment for perf)
+  const frag = document.createDocumentFragment();
+  data.forEach(r => {
+    const isPR = Object.values(prIds).includes(r.id) && r.time && r.time !== "00:00:00";
+    const pace = calcPace(r.time, r.dist);
+    const displayDate = r.raceDate
+      ? new Date(r.raceDate + "T00:00:00").toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric" })
+      : r.addedDate || "";
+
+    const card = document.createElement("div");
+    card.className = "race-card";
+    card.dataset.id = r.id;
+
+    card.innerHTML = `
+      <button class="btn-delete" onclick="deleteEntry(${r.id})" aria-label="Supprimer">✕</button>
+      <div class="card-top">
+        <div class="card-meta">
+          <span class="badge badge-cat">${r.cat}</span>
+          ${isPR ? '<span class="badge badge-pr">PR</span>' : ""}
+          <span class="card-date">${displayDate}</span>
+        </div>
+        <div class="card-name">${r.name}</div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-item">
+          <div class="cs-label">Distance</div>
+          <div class="cs-val">${parseFloat(r.dist).toFixed(2)} km</div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-label">Chrono</div>
+          <div class="cs-val accent">${cleanTime(r.time)}</div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-label">Allure</div>
+          <div class="cs-val teal">${pace}</div>
+        </div>
+      </div>
+      <div class="card-photos">
+        ${r.img1
+          ? `<img src="${r.img1}" alt="Dossard" loading="lazy">`
+          : `<div class="photo-ph"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Dossard</span></div>`}
+        ${r.img2
+          ? `<img src="${r.img2}" alt="Médaille" loading="lazy">`
+          : `<div class="photo-ph"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg><span>Médaille</span></div>`}
+      </div>`;
+    frag.appendChild(card);
+  });
+
+  list.innerHTML = "";
+  list.appendChild(frag);
+}
+
+/* ════════════════════════════════════════
+   FILTER / SEARCH
+════════════════════════════════════════ */
+function toggleFilter(cat) {
+  activeFilter = activeFilter === cat ? null : cat;
+  render();
+}
+function clearFilter() { activeFilter = null; render(); }
+function onSearch() { searchQuery = document.getElementById("searchInput").value; render(); }
+
+/* ════════════════════════════════════════
+   FORM
+════════════════════════════════════════ */
+function openForm() {
+  photos = { i1: "", i2: "" };
+  ["fName","fDist","fTime"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("fCat").value  = "Autre";
+  document.getElementById("fDate").value = new Date().toISOString().slice(0,10);
+  ["errName","errDate","errTime"].forEach(id => document.getElementById(id).classList.remove("visible"));
+  [1,2].forEach(n => {
+    const z = document.getElementById("up"+n);
+    z.classList.remove("done");
+    document.getElementById("up"+n+"-label").textContent = n===1 ? "Dossard" : "Médaille";
+  });
+  document.getElementById("submitBtn").disabled = false;
+  document.getElementById("overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeForm() {
+  document.getElementById("overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+function overlayClick(e) { if (e.target === document.getElementById("overlay")) closeForm(); }
+
+function autoDist() {
+  const cat  = document.getElementById("fCat").value;
+  const dist = DIST_MAP[cat];
+  if (dist) document.getElementById("fDist").value = dist.toFixed(2);
+  else document.getElementById("fDist").value = "";
+}
+
+function valTime(input) {
+  let v = input.value.replace(/\D/g, "").slice(0, 6);
+  if (v.length >= 5) v = v.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
+  else if (v.length >= 3) v = v.replace(/(\d{2})(\d{2})/, "$1:$2");
+  input.value = v;
+}
+
+async function upload(input, num) {
+  const file = input.files[0]; if (!file) return;
+  uploading = true;
+  const zone  = document.getElementById("up"+num);
+  const label = document.getElementById("up"+num+"-label");
+  label.textContent = "Envoi…";
+  document.getElementById("submitBtn").disabled = true;
+
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", UPLOAD_PRESET);
+  try {
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method:"POST", body:fd });
+    if (!res.ok) throw new Error();
+    const d = await res.json();
+    photos["i"+num] = d.secure_url;
+    zone.classList.add("done");
+    label.textContent = "✓ OK";
+  } catch {
+    label.textContent = num===1 ? "Dossard" : "Médaille";
+    showToast("Erreur d'upload. Réessaie.");
+  } finally {
+    uploading = false;
+    document.getElementById("submitBtn").disabled = false;
+  }
+}
+
+async function saveEntry() {
+  if (uploading) return;
+
+  // Validation
+  let valid = true;
+  const name = document.getElementById("fName").value.trim();
+  const date = document.getElementById("fDate").value;
+  const time = document.getElementById("fTime").value.trim();
+
+  document.getElementById("errName").classList.toggle("visible", !name);
+  if (!name) valid = false;
+
+  document.getElementById("errDate").classList.toggle("visible", !date);
+  if (!date) valid = false;
+
+  const badTime = time && !isValidTime(time);
+  document.getElementById("errTime").classList.toggle("visible", badTime);
+  if (badTime) valid = false;
+
+  if (!valid) return;
+
+  const dist = parseFloat(document.getElementById("fDist").value) || 0;
+  const race = {
+    id:        Date.now(),
+    name:      name,
+    raceDate:  date,
+    addedDate: new Date().toLocaleDateString("fr-FR"),
+    cat:       document.getElementById("fCat").value,
+    dist:      dist.toFixed(2),
+    time:      time || "00:00:00",
+    img1:      photos.i1,
+    img2:      photos.i2,
+  };
+
+  await persistAdd(race);
+  closeForm();
+  render();
+  showToast("Course enregistrée ✓");
+}
+
+/* ════════════════════════════════════════
+   DELETE
+════════════════════════════════════════ */
+async function deleteEntry(id) {
+  if (!confirm("Supprimer cette course ?")) return;
+  await persistDelete(id);
+  render();
+}
+
+/* ════════════════════════════════════════
+   EXPORT / IMPORT
+════════════════════════════════════════ */
+function exportData() {
+  if (!allRaces.length) { showToast("Aucune donnée à exporter"); return; }
+  const blob = new Blob([JSON.stringify(allRaces, null, 2)], { type:"application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `race-library-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Sauvegarde exportée ✓");
+}
+
+function importData() {
+  document.getElementById("importFile").click();
+}
+
+async function handleImport(input) {
+  const file = input.files[0]; if (!file) return;
+  try {
+    const text   = await file.text();
+    const parsed = JSON.parse(text);
+    if (!Array.isArray(parsed)) throw new Error();
+
+    // Normalize old format fields
+    const normalized = parsed.map(r => ({
+      id:       r.id || Date.now() + Math.random(),
+      name:     r.name || r.n || "Sans nom",
+      raceDate: r.raceDate || "",
+      addedDate: r.addedDate || r.d || "",
+      cat:      r.cat || r.c || "Autre",
+      dist:     r.dist || r.k || "0",
+      time:     r.time || r.t || "00:00:00",
+      img1:     r.img1 || r.i1 || "",
+      img2:     r.img2 || r.i2 || "",
+    }));
+
+    // Merge: keep existing, add new ones (by id)
+    const existingIds = new Set(allRaces.map(r => r.id));
+    const toAdd = normalized.filter(r => !existingIds.has(r.id));
+    const merged = [...allRaces, ...toAdd];
+
+    await idbBulkPut(merged);
+    allRaces = merged;
+    lsSave(allRaces);
     render();
+    showToast(`${toAdd.length} course(s) restaurée(s) ✓`);
+  } catch {
+    showToast("Fichier invalide");
+  }
+  input.value = "";
+}
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+(async () => {
+  try { await openDB(); } catch { console.warn("IndexedDB indisponible, fallback localStorage"); }
+  await loadRaces();
+  render();
+})();
 </script>
 </body>
 </html>
