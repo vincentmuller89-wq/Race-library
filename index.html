@@ -380,6 +380,9 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <button class="btn-add" onclick="openForm()" title="Ajouter">＋</button>
     </div>
   </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <span id="syncStatus" style="font-size:10px;font-weight:600;color:var(--text3);flex:1;display:none"></span>
+  </div>
   <div class="search-wrap">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <input type="text" id="searchInput" placeholder="Rechercher une course…" oninput="onSearch()" autocomplete="off">
@@ -497,120 +500,163 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 /* ════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════ */
-const CLOUD_NAME   = "dt7tr0sec";
+const CLOUD_NAME    = "dt7tr0sec";
 const UPLOAD_PRESET = "xlgyluge";
-const LS_KEY       = "racelib_v1";
-const IDB_DB       = "racelib";
-const IDB_STORE    = "races";
-const DIST_MAP     = { "5 KM": 5.00, "10 KM": 10.00, "Semi": 21.0975, "Marathon": 42.195 };
-const PR_DIST      = { "5.00": null, "10.00": null, "21.10": null, "42.20": null };
+const LS_KEY        = "racelib_v1";
+const IDB_DB        = "racelib";
+const IDB_STORE     = "races";
+const DIST_MAP      = { "5 KM": 5.00, "10 KM": 10.00, "Semi": 21.0975, "Marathon": 42.195 };
+
+// JSONBin — stockage cloud automatique
+const BIN_ID   = "69f79ab2856a682189a0c675";
+const BIN_KEY  = "$2a$10$w/sRhzYmKdjoqVQhvKcoxOfq49aCLuSLaQuz3MJ3xXexjQjoVB9gS";
+const BIN_URL  = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const BIN_HEADERS = {
+  "Content-Type": "application/json",
+  "X-Master-Key": BIN_KEY,
+  "X-Bin-Versioning": "false"   // pas de versioning → écrase proprement
+};
 
 /* ════════════════════════════════════════
    STATE
 ════════════════════════════════════════ */
-let db          = null;
-let allRaces    = [];
+let db           = null;
+let allRaces     = [];
 let activeFilter = null;
 let searchQuery  = "";
 let uploading    = false;
 let photos       = { i1: "", i2: "" };
 
 /* ════════════════════════════════════════
-   INDEXEDDB
+   JSONBIN — Cloud storage
+════════════════════════════════════════ */
+function setSyncStatus(msg, color) {
+  const el = document.getElementById("syncStatus");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color || "var(--text3)";
+  el.style.display = msg ? "inline" : "none";
+}
+
+async function cloudSave(races) {
+  setSyncStatus("☁ Sauvegarde…", "var(--text3)");
+  try {
+    const res = await fetch(BIN_URL, {
+      method: "PUT",
+      headers: BIN_HEADERS,
+      body: JSON.stringify({ races })
+    });
+    if (!res.ok) throw new Error(res.status);
+    setSyncStatus("✓ Synchronisé", "var(--teal)");
+    setTimeout(() => setSyncStatus(""), 2500);
+  } catch(e) {
+    setSyncStatus("⚠ Sync échouée", "var(--accent)");
+    setTimeout(() => setSyncStatus(""), 4000);
+    console.warn("JSONBin save failed", e);
+  }
+}
+
+async function cloudLoad() {
+  try {
+    const res = await fetch(BIN_URL + "/latest", { headers: { "X-Master-Key": BIN_KEY } });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const data = json?.record?.races;
+    if (Array.isArray(data)) return data;
+  } catch(e) {}
+  return null;
+}
+
+/* ════════════════════════════════════════
+   INDEXEDDB (backup local)
 ════════════════════════════════════════ */
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(IDB_DB, 1);
     req.onupgradeneeded = e => {
-      const store = e.target.result.createObjectStore(IDB_STORE, { keyPath: "id" });
-      store.createIndex("raceDate", "raceDate", { unique: false });
+      e.target.result.createObjectStore(IDB_STORE, { keyPath: "id" });
     };
     req.onsuccess = e => { db = e.target.result; resolve(db); };
     req.onerror   = () => reject(req.error);
   });
 }
-
 function idbGetAll() {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     if (!db) { resolve([]); return; }
-    const tx  = db.transaction(IDB_STORE, "readonly");
-    const req = tx.objectStore(IDB_STORE).getAll();
+    const req = db.transaction(IDB_STORE,"readonly").objectStore(IDB_STORE).getAll();
     req.onsuccess = () => resolve(req.result || []);
     req.onerror   = () => resolve([]);
   });
 }
-
-function idbPut(race) {
-  return new Promise((resolve) => {
-    if (!db) { resolve(); return; }
-    const tx = db.transaction(IDB_STORE, "readwrite");
-    tx.objectStore(IDB_STORE).put(race);
-    tx.oncomplete = resolve;
-    tx.onerror    = resolve;
-  });
-}
-
-function idbDelete(id) {
-  return new Promise((resolve) => {
-    if (!db) { resolve(); return; }
-    const tx = db.transaction(IDB_STORE, "readwrite");
-    tx.objectStore(IDB_STORE).delete(id);
-    tx.oncomplete = resolve;
-    tx.onerror    = resolve;
-  });
-}
-
 function idbBulkPut(races) {
-  return new Promise((resolve) => {
-    if (!db || !races.length) { resolve(); return; }
-    const tx    = db.transaction(IDB_STORE, "readwrite");
-    const store = tx.objectStore(IDB_STORE);
-    races.forEach(r => store.put(r));
-    tx.oncomplete = resolve;
-    tx.onerror    = resolve;
-  });
+  if (!db || !races.length) return;
+  const tx = db.transaction(IDB_STORE,"readwrite");
+  const st = tx.objectStore(IDB_STORE);
+  races.forEach(r => st.put(r));
+}
+function idbPut(race)   { if (!db) return; db.transaction(IDB_STORE,"readwrite").objectStore(IDB_STORE).put(race); }
+function idbDelete(id)  { if (!db) return; db.transaction(IDB_STORE,"readwrite").objectStore(IDB_STORE).delete(id); }
+
+/* ════════════════════════════════════════
+   LOCALSTORAGE (backup local)
+════════════════════════════════════════ */
+function lsSave(races) { try { localStorage.setItem(LS_KEY, JSON.stringify(races)); } catch(_) {} }
+function lsLoad()      { try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch(_) { return []; } }
+
+/* ════════════════════════════════════════
+   LOAD — JSONBin d'abord, fallback local
+════════════════════════════════════════ */
+async function loadRaces() {
+  setSyncStatus("☁ Chargement…", "var(--text3)");
+
+  // 1. JSONBin — source de vérité absolue (indépendant du contexte iOS)
+  const cloudData = await cloudLoad();
+  if (cloudData !== null) {
+    allRaces = cloudData;
+    lsSave(allRaces);
+    idbBulkPut(allRaces);
+    setSyncStatus("");
+    return;
+  }
+
+  // 2. Fallback localStorage
+  const lsData = lsLoad();
+  if (lsData.length > 0) {
+    allRaces = lsData;
+    setSyncStatus("⚠ Mode hors ligne", "var(--accent)");
+    cloudSave(allRaces); // tente de re-syncer
+    return;
+  }
+
+  // 3. Fallback IndexedDB
+  const idbData = await idbGetAll();
+  if (idbData.length > 0) {
+    allRaces = idbData;
+    lsSave(allRaces);
+    setSyncStatus("⚠ Mode hors ligne", "var(--accent)");
+    cloudSave(allRaces);
+    return;
+  }
+
+  allRaces = [];
+  setSyncStatus("");
 }
 
 /* ════════════════════════════════════════
-   PERSISTENCE HELPERS
+   PERSIST — 3 couches à chaque écriture
 ════════════════════════════════════════ */
-function lsSave(races) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(races)); } catch(_) {}
-}
-
-function lsLoad() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch(_) { return []; }
-}
-
-async function loadRaces() {
-  const lsRaces  = lsLoad();
-  const idbRaces = await idbGetAll();
-
-  // localStorage est la source de vérité principale (fonctionne en mode standalone iOS)
-  // Si LS a des données → on les utilise et on sync IDB
-  // Si LS vide mais IDB a des données → on restaure depuis IDB (rare)
-  if (lsRaces.length > 0) {
-    allRaces = lsRaces;
-    // Sync IDB en arrière-plan si nécessaire
-    if (idbRaces.length !== lsRaces.length) idbBulkPut(lsRaces);
-  } else if (idbRaces.length > 0) {
-    allRaces = idbRaces;
-    lsSave(allRaces);
-  } else {
-    allRaces = [];
-  }
-}
-
 async function persistAdd(race) {
   allRaces.unshift(race);
-  lsSave(allRaces);       // LS en premier — toujours
-  idbPut(race);           // IDB en bonus, non bloquant
+  lsSave(allRaces);
+  idbPut(race);
+  await cloudSave(allRaces);
 }
 
 async function persistDelete(id) {
   allRaces = allRaces.filter(r => r.id !== id);
-  lsSave(allRaces);       // LS en premier
-  idbDelete(id);          // IDB en bonus
+  lsSave(allRaces);
+  idbDelete(id);
+  await cloudSave(allRaces);
 }
 
 /* ════════════════════════════════════════
@@ -985,8 +1031,9 @@ async function handleImport(input) {
     const merged = [...allRaces, ...toAdd];
 
     allRaces = merged;
-    lsSave(allRaces);      // LS en premier
-    idbBulkPut(merged);    // IDB en bonus
+    lsSave(allRaces);
+    idbBulkPut(merged);
+    await cloudSave(allRaces);
     render();
     showToast(`${toAdd.length} course(s) restaurée(s) ✓`);
   } catch {
@@ -1011,7 +1058,7 @@ function showToast(msg) {
    INIT
 ════════════════════════════════════════ */
 (async () => {
-  try { await openDB(); } catch { console.warn("IndexedDB indisponible, fallback localStorage"); }
+  try { await openDB(); } catch(_) {}
   await loadRaces();
   render();
 })();
