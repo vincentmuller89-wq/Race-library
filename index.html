@@ -3,128 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Race Library - Correction Finale</title>
+    <title>RECOUVREMENT TOTAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --main: #ff5e62; --sub: #ff9966; --bg: #f8fafc; }
-        body { background-color: var(--bg); font-family: sans-serif; padding: 15px; color: #1e293b; }
-        
-        /* Correction structurelle de la carte */
-        .card-race { 
-            background: white; 
-            border-radius: 24px; 
-            margin-bottom: 20px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Les photos restent en haut */
-        .img-box { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 1px; 
-            height: 160px; 
-            background: #f1f5f9;
-            flex-shrink: 0;
-        }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* L'encart de texte est bien distinct */
-        .card-content { 
-            padding: 18px; 
-            background: white;
-            position: relative;
-        }
-
-        .rp-bar { background: white; border-radius: 18px; padding: 12px; margin-bottom: 20px; display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .rp-item { flex: 1; text-align: center; border-right: 1px solid #f1f5f9; }
-        .rp-item:last-child { border-right: none; }
-        
-        .debug-panel { background: #fff1f2; border: 2px dashed #f43f5e; padding: 12px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
-        .btn-scan { background: #f43f5e; color: white; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; border: none; }
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+        .debug-card { background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .found-item { background: #065f46; padding: 10px; margin-top: 5px; border-radius: 8px; font-family: monospace; font-size: 10px; overflow-wrap: break-word; }
+        .btn { background: #ec4899; color: white; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="debug-panel">
-        <p class="text-[10px] font-bold text-rose-600 uppercase">Données manquantes ?</p>
-        <button onclick="forceRecover()" class="btn-scan">Scanner le téléphone</button>
+    <h1 class="text-xl font-black mb-4 text-pink-500 uppercase">Diagnostic Mémoire</h1>
+
+    <div class="debug-card">
+        <p class="text-xs text-slate-400 mb-2">Étape 1 : Lister tout ce que le téléphone contient</p>
+        <button onclick="inspectAll()" class="btn">1. ANALYSER LA MÉMOIRE</button>
+        <div id="storageList" class="mt-4 space-y-2 text-xs">
+            <!-- Les clés trouvées s'afficheront ici -->
+        </div>
     </div>
 
-    <header class="flex justify-between items-center mb-6">
-        <h1 class="text-xl font-black italic uppercase italic">Race <span class="text-rose-500">Library</span></h1>
-        <div id="displayProfile" class="text-[10px] font-black text-indigo-500 uppercase">Profil : ...</div>
-    </header>
-
-    <div class="rp-bar">
-        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">5k</p><p id="rp5" class="text-xs font-black text-rose-500">--</p></div>
-        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">10k</p><p id="rp10" class="text-xs font-black text-rose-500">--</p></div>
-        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">21k</p><p id="rp21" class="text-xs font-black text-rose-500">--</p></div>
-        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">42k</p><p id="rp42" class="text-xs font-black text-rose-500">--</p></div>
+    <div id="recoveryZone" class="debug-card" style="display:none;">
+        <p class="text-xs text-slate-400 mb-2">Étape 2 : Restaurer les données</p>
+        <select id="keySelector" class="w-full bg-slate-900 p-3 rounded mb-2 text-sm"></select>
+        <button onclick="repair()" class="btn !bg-indigo-600">2. RÉPARER CETTE CLÉ</button>
     </div>
 
-    <div id="raceList"></div>
+    <p class="text-[10px] text-slate-500 text-center mt-10">
+        Une fois les données réparées, je te redonnerai le code de l'application propre.
+    </p>
 
 <script>
-    let currentProfile = localStorage.getItem('active_profile_race') || 'Vincent';
+    function inspectAll() {
+        const list = document.getElementById('storageList');
+        const zone = document.getElementById('recoveryZone');
+        const selector = document.getElementById('keySelector');
+        list.innerHTML = "";
+        selector.innerHTML = "";
+        
+        if (localStorage.length === 0) {
+            list.innerHTML = "❌ La mémoire est totalement vide.";
+            return;
+        }
 
-    function forceRecover() {
-        let found = false;
+        let foundCount = 0;
         for (let i = 0; i < localStorage.length; i++) {
             let key = localStorage.key(i);
-            if (key.includes('data') && key.includes(currentProfile)) {
-                let data = localStorage.getItem(key);
-                if (data && data !== "[]") {
-                    localStorage.setItem('data_v32_' + currentProfile, data);
-                    found = true;
-                }
+            let val = localStorage.getItem(key);
+            
+            // On cherche les clés qui ressemblent à nos données
+            if (val.includes('[') || key.includes('data')) {
+                foundCount++;
+                list.innerHTML += `<div class="found-item"><b>Clé:</b> ${key}<br><b>Aperçu:</b> ${val.substring(0, 50)}...</div>`;
+                let opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key;
+                selector.appendChild(opt);
             }
         }
-        if (found) { alert("Succès ! Données restaurées."); render(); }
-        else { alert("Aucune donnée trouvée."); }
+
+        if (foundCount > 0) {
+            zone.style.display = "block";
+            alert(foundCount + " source(s) de données détectée(s) !");
+        } else {
+            list.innerHTML = "❓ Des données existent mais ne ressemblent pas à des courses.";
+        }
     }
 
-    function cleanT(t) {
-        if(!t || t === "00:00:00") return "--";
-        return t.replace(/^00:/, '');
+    function repair() {
+        const selectedKey = document.getElementById('keySelector').value;
+        const data = localStorage.getItem(selectedKey);
+        
+        // On force la copie vers le nouveau système universel
+        localStorage.setItem('active_profile_race', 'Vincent');
+        localStorage.setItem('data_v32_Vincent', data);
+        
+        alert("✅ Données transférées vers 'Vincent' (v32). \n\nCopie maintenant le code de l'application que je vais te donner juste après.");
     }
-
-    function render() {
-        document.getElementById('displayProfile').innerText = "Profil : " + currentProfile;
-        let data = JSON.parse(localStorage.getItem('data_v32_' + currentProfile) || "[]");
-        const list = document.getElementById('raceList');
-        const records = {"5.00": null, "10.00": null, "21.10": null, "42.20": null};
-
-        list.innerHTML = data.map(r => {
-            const dk = parseFloat(r.k).toFixed(2);
-            if(records[dk] === undefined || records[dk] === null || (r.t !== "00:00:00" && r.t < records[dk])) records[dk] = r.t;
-
-            return `
-            <div class="card-race">
-                <div class="img-box">
-                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Dossard</div>`}
-                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Médaille</div>`}
-                </div>
-                <div class="card-content">
-                    <p class="text-[9px] font-black text-rose-500 uppercase mb-1">${r.d} • ${r.c}</p>
-                    <h2 class="text-lg font-black italic uppercase text-slate-800 leading-tight mb-3">${r.n}</h2>
-                    <div class="flex justify-between pt-3 border-t border-slate-50">
-                        <div><p class="text-[8px] text-slate-400 font-bold uppercase">Dist.</p><p class="font-black italic text-sm">${r.k}k</p></div>
-                        <div><p class="text-[8px] text-slate-400 font-bold uppercase">Chrono</p><p class="font-black italic text-sm">${cleanT(r.t)}</p></div>
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-
-        document.getElementById('rp5').innerText = cleanT(records["5.00"]);
-        document.getElementById('rp10').innerText = cleanT(records["10.00"]);
-        document.getElementById('rp21').innerText = cleanT(records["21.10"]);
-        document.getElementById('rp42').innerText = cleanT(records["42.20"]);
-    }
-
-    render();
 </script>
 </body>
 </html>
