@@ -7,20 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --accent: #D85A30;
-  --accent-light: #FAECE7;
-  --accent-mid: #F0997B;
-  --accent-dark: #712B13;
-  --teal: #1D9E75;
-  --teal-light: #E1F5EE;
-  --bg: #F4F2ED;
+  --accent: #E8003D;
+  --accent-light: #FFF0F4;
+  --accent-mid: #FF4D78;
+  --accent-dark: #A0002A;
+  --teal: #00B4A0;
+  --teal-light: #E0FAF7;
+  --teal-dark: #007A6E;
+  --electric: #FFDD00;
+  --bg: #F0F2F5;
   --surface: #FFFFFF;
-  --surface2: #F1EFE8;
-  --surface3: #E8E5DC;
-  --text: #1A1916;
-  --text2: #5F5E5A;
-  --text3: #888780;
-  --border: #D3D1C7;
+  --surface2: #F5F6F8;
+  --surface3: #E8EAF0;
+  --text: #0A0E1A;
+  --text2: #444C60;
+  --text3: #8890A4;
+  --border: #DDE0E8;
   --radius: 22px;
   --radius-sm: 14px;
 }
@@ -32,6 +34,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
   background: var(--surface);
   padding: 18px 20px 14px;
   border-bottom: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
   position: sticky; top: 0; z-index: 200;
 }
 .header-row1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
@@ -106,7 +109,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .stat-cell.active { background: var(--accent-light); }
 .stat-cell.active::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-  height: 2.5px; background: var(--accent);
+  height: 3px; background: var(--accent);
 }
 .stat-cell .label {
   font-size: 9px; font-weight: 600;
@@ -191,7 +194,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
   padding: 3px 9px; border-radius: 20px;
 }
 .badge-cat { background: var(--accent-light); color: var(--accent-dark); }
-.badge-pr { background: var(--teal-light); color: #085041; }
+.badge-pr { background: var(--electric); color: #1A1400; }
 .card-date { font-size: 11px; color: var(--text3); font-weight: 500; margin-left: auto; }
 .card-name {
   font-family: 'Barlow Condensed', sans-serif;
@@ -237,7 +240,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   line-height: 1;
 }
-.btn-delete:hover { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+.btn-delete:hover { background: #FFF0F4; color: #A0002A; border-color: #FF4D78; }
 
 /* ── MODAL ── */
 .overlay {
