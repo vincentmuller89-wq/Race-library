@@ -3,77 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S.O.S. Données</title>
+    <title>Race Library - Nouveau Départ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
-        .log-box { background: #1e293b; border-radius: 12px; padding: 15px; font-family: monospace; font-size: 11px; margin-bottom: 20px; border: 1px solid #334155; height: 150px; overflow-y: auto; }
-        .btn-fix { background: #f43f5e; color: white; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; border: none; text-transform: uppercase; }
-        .card { background: white; color: #1e293b; border-radius: 12px; padding: 10px; margin-top: 10px; }
+        :root { --main: #ff5e62; --sub: #ff9966; --bg: #f8fafc; }
+        body { background-color: var(--bg); color: #1e293b; font-family: sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 100px; }
+        .card-race { background: white; border-radius: 24px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .img-box { display: grid; grid-template-columns: 1fr 1fr; height: 160px; background: #f1f5f9; gap: 2px; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .card-content { padding: 18px; }
+        .rp-bar { background: white; border-radius: 20px; padding: 12px; margin-bottom: 25px; display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .rp-item { flex: 1; text-align: center; border-right: 1px solid #f1f5f9; }
+        .rp-item:last-child { border-right: none; }
+        .modal { position: fixed; inset: 0; background: white; z-index: 1000; overflow-y: auto; padding: 24px; display: none; }
+        .field { background: #f1f5f9; border-radius: 15px; padding: 10px 15px; margin-bottom: 12px; }
+        .field label { display: block; font-size: 9px; font-weight: 900; color: var(--main); text-transform: uppercase; }
+        .field input, .field select { background: transparent; border: none; width: 100%; font-weight: 700; outline: none; font-size: 16px; }
+        .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 800; border-radius: 18px; padding: 16px; width: 100%; border: none; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <h1 class="text-xl font-black mb-4 uppercase">Restauration <span class="text-rose-500">Profonde</span></h1>
+<div class="max-w-md mx-auto p-5">
+    <header class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-xl font-black italic uppercase">Race <span class="text-rose-500">Library</span></h1>
+            <button onclick="openProfile()" id="profBtn" class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Chargement...</button>
+        </div>
+        <div class="flex gap-2">
+             <button onclick="exportData()" class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400" title="Sauvegarder">💾</button>
+             <button onclick="openForm()" class="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center text-white shadow-lg">＋</button>
+        </div>
+    </header>
 
-    <div id="logs" class="log-box">Attente du lancement...</div>
-
-    <button onclick="deepMerge()" class="btn-fix">1. Fusionner toutes les sources</button>
-    <button onclick="window.location.reload()" class="mt-4 w-full text-[10px] text-slate-400">2. Rafraîchir l'écran</button>
-
-    <div id="preview" class="mt-8">
-        <!-- Les courses récupérées apparaîtront ici -->
+    <div class="rp-bar">
+        <div class="rp-item"><p class="text-[8px] font-bold text-slate-400 uppercase">5k</p><p id="rp5" class="font-black text-rose-500">--</p></div>
+        <div class="rp-item"><p class="text-[8px] font-bold text-slate-400 uppercase">10k</p><p id="rp10" class="font-black text-rose-500">--</p></div>
+        <div class="rp-item"><p class="text-[8px] font-bold text-slate-400 uppercase">21k</p><p id="rp21" class="font-black text-rose-500">--</p></div>
+        <div class="rp-item"><p class="text-[8px] font-bold text-slate-400 uppercase">42k</p><p id="rp42" class="font-black text-rose-500">--</p></div>
     </div>
 
+    <div id="raceList"></div>
+</div>
+
+<!-- MODAL FORMULAIRE -->
+<div id="formModal" class="modal">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-black uppercase italic">Ajouter</h2>
+        <button onclick="closeForm()" class="text-slate-300">✕</button>
+    </div>
+    <div class="field"><label>Nom</label><input type="text" id="fName" placeholder="ex: Marathon de Paris"></div>
+    <div class="grid grid-cols-2 gap-3">
+        <div class="field"><label>Format</label>
+            <select id="fCat" onchange="autoDist()">
+                <option value="Autre">Autre</option><option value="5 KM">5 KM</option>
+                <option value="10 KM">10 KM</option><option value="Semi">Semi</option>
+                <option value="Marathon">Marathon</option>
+            </select>
+        </div>
+        <div class="field"><label>Distance (km)</label><input type="number" id="fDist" step="0.01"></div>
+    </div>
+    <div class="field"><label>Chrono (HH:MM:SS)</label><input type="text" id="fTime" placeholder="00:00:00"></div>
+    <button onclick="saveEntry()" class="btn-joy mt-4">Enregistrer</button>
+</div>
+
+<!-- SELECTEUR PROFIL -->
+<div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center;">
+    <div class="w-full max-w-[250px] text-center">
+        <h3 class="font-black text-2xl mb-6">PROFIL</h3>
+        <button onclick="setProfile('Vincent')" class="btn-joy mb-4">VINCENT</button>
+        <button onclick="setProfile('Albane')" class="btn-joy !from-purple-500 !to-indigo-600">ALBANE</button>
+    </div>
+</div>
+
 <script>
-    const log = (msg) => { document.getElementById('logs').innerHTML += `> ${msg}<br>`; };
+    let currentProfile = localStorage.getItem('active_profile_race');
+    const KEY = () => 'data_v33_' + currentProfile; // Nouvelle version stable
 
-    function deepMerge() {
-        log("Lancement du scan profond...");
-        let masterList = [];
-        let profiles = ["Vincent", "Albane"];
-        let versions = ["v30", "v31", "v32", ""]; // On cherche toutes les versions
-
-        for (let i = 0; i < localStorage.length; i++) {
-            let key = localStorage.key(i);
-            let val = localStorage.getItem(key);
-
-            // Si la clé ressemble à une clé de données
-            if (key.includes("data") || val.includes('[{"')) {
-                try {
-                    let parsed = JSON.parse(val);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        log(`Trouvé ${parsed.length} courses dans [${key}]`);
-                        // On fusionne les données sans doublons (basé sur l'id ou le nom)
-                        parsed.forEach(item => {
-                            if (!masterList.find(m => m.n === item.n && m.d === item.d)) {
-                                masterList.push(item);
-                            }
-                        });
-                    }
-                } catch(e) { log(`Erreur lecture sur ${key}`); }
-            }
-        }
-
-        if (masterList.length > 0) {
-            log(`<b>Total récupéré : ${masterList.length} courses!</b>`);
-            // On sauvegarde cette liste propre dans la clé que l'appli utilise
-            localStorage.setItem('data_v32_Vincent', JSON.stringify(masterList));
-            localStorage.setItem('active_profile_race', 'Vincent');
-            
-            // Affichage immédiat
-            const preview = document.getElementById('preview');
-            preview.innerHTML = "<h3 class='font-bold mb-2'>Courses récupérées :</h3>";
-            masterList.forEach(r => {
-                preview.innerHTML += `<div class='card'><b>${r.n}</b> - ${r.k}km (${r.d})</div>`;
-            });
-            
-            alert("Restauration réussie ! Les données sont prêtes.");
-        } else {
-            log("❌ Aucune donnée trouvée dans TOUTE la mémoire.");
-            alert("Désolé, aucune donnée n'a pu être extraite. La mémoire semble vide.");
-        }
+    function setProfile(p) {
+        currentProfile = p;
+        localStorage.setItem('active_profile_race', p);
+        document.getElementById('profileModal').style.display = 'none';
+        document.getElementById('profBtn').innerText = "Profil : " + p;
+        render();
     }
+
+    function openProfile() { document.getElementById('profileModal').style.display = 'flex'; }
+    function openForm() { document.getElementById('formModal').style.display = 'block'; }
+    function closeForm() { document.getElementById('formModal').style.display = 'none'; }
+
+    function autoDist() {
+        const map = {"5 KM":"5.00","10 KM":"10.00","Semi":"21.10","Marathon":"42.20"};
+        const c = document.getElementById('fCat').value;
+        if(map[c]) document.getElementById('fDist').value = map[c];
+    }
+
+    function saveEntry() {
+        const name = document.getElementById('fName').value;
+        if(!name) return alert("Nom requis");
+        const data = JSON.parse(localStorage.getItem(KEY()) || "[]");
+        data.unshift({
+            id: Date.now(),
+            n: name,
+            d: new Date().toLocaleDateString('fr-FR'),
+            c: document.getElementById('fCat').value,
+            k: document.getElementById('fDist').value || 0,
+            t: document.getElementById('fTime').value || "00:00:00"
+        });
+        localStorage.setItem(KEY(), JSON.stringify(data));
+        closeForm(); render();
+    }
+
+    function exportData() {
+        const data = localStorage.getItem(KEY());
+        if(!data || data === "[]") return alert("Rien à exporter");
+        navigator.clipboard.writeText(data);
+        alert("Sauvegarde copiée ! Colle ce texte dans tes notes ou un mail pour ne jamais perdre tes données.");
+    }
+
+    function render() {
+        const data = JSON.parse(localStorage.getItem(KEY()) || "[]");
+        const list = document.getElementById('raceList');
+        const records = {"5.00":"--", "10.00":"--", "21.10":"--", "42.20":"--"};
+
+        list.innerHTML = data.map(r => {
+            const dk = parseFloat(r.k).toFixed(2);
+            if(records[dk] === "--" || (r.t !== "00:00:00" && r.t < records[dk])) records[dk] = r.t;
+            return `
+            <div class="card-race">
+                <div class="card-content">
+                    <p class="text-[9px] font-black text-rose-500 uppercase">${r.d} • ${r.c}</p>
+                    <h2 class="text-lg font-black italic uppercase text-slate-800">${r.n}</h2>
+                    <div class="flex justify-between mt-3 pt-3 border-t border-slate-50">
+                        <p class="font-bold text-sm">${r.k} km</p>
+                        <p class="font-black text-sm text-indigo-600">${r.t}</p>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('rp5').innerText = records["5.00"];
+        document.getElementById('rp10').innerText = records["10.00"];
+        document.getElementById('rp21').innerText = records["21.10"];
+        document.getElementById('rp42').innerText = records["42.20"];
+    }
+
+    if(currentProfile) setProfile(currentProfile); else openProfile();
 </script>
 </body>
 </html>
