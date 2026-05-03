@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Race Library">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#E8003D">
 <title>Race Library · Vincent</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -578,29 +583,34 @@ function lsLoad() {
 }
 
 async function loadRaces() {
-  let idbRaces = await idbGetAll();
-  const lsRaces = lsLoad();
+  const lsRaces  = lsLoad();
+  const idbRaces = await idbGetAll();
 
-  // Merge: IDB is source of truth, but if IDB empty and LS has data → seed IDB
-  if (idbRaces.length === 0 && lsRaces.length > 0) {
-    await idbBulkPut(lsRaces);
-    idbRaces = lsRaces;
+  // localStorage est la source de vérité principale (fonctionne en mode standalone iOS)
+  // Si LS a des données → on les utilise et on sync IDB
+  // Si LS vide mais IDB a des données → on restaure depuis IDB (rare)
+  if (lsRaces.length > 0) {
+    allRaces = lsRaces;
+    // Sync IDB en arrière-plan si nécessaire
+    if (idbRaces.length !== lsRaces.length) idbBulkPut(lsRaces);
+  } else if (idbRaces.length > 0) {
+    allRaces = idbRaces;
+    lsSave(allRaces);
+  } else {
+    allRaces = [];
   }
-  allRaces = idbRaces;
-  // Keep LS in sync
-  lsSave(allRaces);
 }
 
 async function persistAdd(race) {
   allRaces.unshift(race);
-  await idbPut(race);
-  lsSave(allRaces);
+  lsSave(allRaces);       // LS en premier — toujours
+  idbPut(race);           // IDB en bonus, non bloquant
 }
 
 async function persistDelete(id) {
   allRaces = allRaces.filter(r => r.id !== id);
-  await idbDelete(id);
-  lsSave(allRaces);
+  lsSave(allRaces);       // LS en premier
+  idbDelete(id);          // IDB en bonus
 }
 
 /* ════════════════════════════════════════
@@ -974,9 +984,9 @@ async function handleImport(input) {
     const toAdd = normalized.filter(r => !existingIds.has(r.id));
     const merged = [...allRaces, ...toAdd];
 
-    await idbBulkPut(merged);
     allRaces = merged;
-    lsSave(allRaces);
+    lsSave(allRaces);      // LS en premier
+    idbBulkPut(merged);    // IDB en bonus
     render();
     showToast(`${toAdd.length} course(s) restaurée(s) ✓`);
   } catch {
