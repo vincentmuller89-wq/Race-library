@@ -3,113 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Race Library - Récupération</title>
+    <title>Race Library - Correction Finale</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff5e62; --sub: #ff9966; --bg: #f8fafc; }
-        body { background-color: var(--bg); color: #1e293b; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .card-race { background: white; border-radius: 28px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); position: relative; }
-        .img-box { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; height: 160px; background: #f1f5f9; }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .card-content { padding: 20px; }
+        body { background-color: var(--bg); font-family: sans-serif; padding: 15px; color: #1e293b; }
         
-        /* RECORDS BIEN ESPACÉS */
-        .rp-bar { background: white; border-radius: 20px; padding: 12px 5px; margin-bottom: 20px; display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .rp-item { flex: 1; text-align: center; border-right: 1px solid #f1f5f9; min-width: 0; }
-        .rp-item:last-child { border-right: none; }
-        .rp-label { font-size: 8px; font-weight: 900; color: #94a3b8; text-transform: uppercase; }
-        .rp-val { font-size: 11px; font-weight: 900; color: var(--main); }
+        /* Correction structurelle de la carte */
+        .card-race { 
+            background: white; 
+            border-radius: 24px; 
+            margin-bottom: 20px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
 
-        .modal { position: fixed; inset: 0; background: white; z-index: 1000; overflow-y: auto; padding: 24px; display: none; }
-        .field { background: #f1f5f9; border-radius: 18px; padding: 12px 15px; margin-bottom: 12px; }
-        .field label { display: block; font-size: 9px; font-weight: 900; color: var(--main); text-transform: uppercase; }
-        .field input, .field select { background: transparent; border: none; width: 100%; font-weight: 700; outline: none; font-size: 16px; }
+        /* Les photos restent en haut */
+        .img-box { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1px; 
+            height: 160px; 
+            background: #f1f5f9;
+            flex-shrink: 0;
+        }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* L'encart de texte est bien distinct */
+        .card-content { 
+            padding: 18px; 
+            background: white;
+            position: relative;
+        }
+
+        .rp-bar { background: white; border-radius: 18px; padding: 12px; margin-bottom: 20px; display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .rp-item { flex: 1; text-align: center; border-right: 1px solid #f1f5f9; }
+        .rp-item:last-child { border-right: none; }
         
-        .btn-joy { background: linear-gradient(135deg, var(--main), var(--sub)); color: white; font-weight: 900; border-radius: 20px; padding: 18px; width: 100%; text-transform: uppercase; border: none; }
-        .upload-zone { border: 2px dashed #e2e8f0; border-radius: 18px; padding: 10px; text-align: center; font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        .upload-zone.active { border-color: #10b981; background: #ecfdf5; color: #10b981; }
-        .badge-delete { position: absolute; top: 10px; right: 10px; background: white; color: #ef4444; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .debug-panel { background: #fff1f2; border: 2px dashed #f43f5e; padding: 12px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
+        .btn-scan { background: #f43f5e; color: white; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; border: none; }
     </style>
 </head>
 <body>
 
-<div class="max-w-md mx-auto p-6 pb-32">
+    <div class="debug-panel">
+        <p class="text-[10px] font-bold text-rose-600 uppercase">Données manquantes ?</p>
+        <button onclick="forceRecover()" class="btn-scan">Scanner le téléphone</button>
+    </div>
+
     <header class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-xl font-black italic uppercase tracking-tighter">Race <span class="text-rose-500">Library</span></h1>
-            <button onclick="openSelector()" id="displayProfile" class="text-[10px] font-black text-indigo-500 uppercase italic">Changer Profil</button>
-        </div>
-        <button onclick="openForm()" class="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
+        <h1 class="text-xl font-black italic uppercase italic">Race <span class="text-rose-500">Library</span></h1>
+        <div id="displayProfile" class="text-[10px] font-black text-indigo-500 uppercase">Profil : ...</div>
     </header>
 
     <div class="rp-bar">
-        <div class="rp-item"><p class="rp-label">5k</p><p id="rp5" class="rp-val">--</p></div>
-        <div class="rp-item"><p class="rp-label">10k</p><p id="rp10" class="rp-val">--</p></div>
-        <div class="rp-item"><p class="rp-label">21k</p><p id="rp21" class="rp-val">--</p></div>
-        <div class="rp-item"><p class="rp-label">42k</p><p id="rp42" class="rp-val">--</p></div>
+        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">5k</p><p id="rp5" class="text-xs font-black text-rose-500">--</p></div>
+        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">10k</p><p id="rp10" class="text-xs font-black text-rose-500">--</p></div>
+        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">21k</p><p id="rp21" class="text-xs font-black text-rose-500">--</p></div>
+        <div class="rp-item"><p class="text-[8px] text-slate-400 font-bold uppercase">42k</p><p id="rp42" class="text-xs font-black text-rose-500">--</p></div>
     </div>
 
-    <div id="statsBox" class="grid grid-cols-2 gap-4 mb-6"></div>
     <div id="raceList"></div>
-</div>
-
-<!-- FORMULAIRE -->
-<div id="formModal" class="modal">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-black uppercase italic">Nouvelle Course</h2>
-        <button onclick="closeForm()" class="text-slate-300">✕</button>
-    </div>
-    <div class="field"><label>Nom</label><input type="text" id="fName"></div>
-    <div class="grid grid-cols-2 gap-3">
-        <div class="field"><label>Date</label><input type="date" id="fDate"></div>
-        <div class="field"><label>Format</label>
-            <select id="fCat" onchange="autoDist()">
-                <option value="Autre">Autre</option>
-                <option value="5 KM">5 KM</option>
-                <option value="10 KM">10 KM</option>
-                <option value="Semi">Semi</option>
-                <option value="Marathon">Marathon</option>
-            </select>
-        </div>
-    </div>
-    <div class="grid grid-cols-2 gap-3">
-        <div class="field"><label>KM</label><input type="number" id="fDist" step="0.01"></div>
-        <div class="field"><label>Chrono</label><input type="text" id="fTime" placeholder="00:00:00" oninput="formatTime(this)"></div>
-    </div>
-    <div class="grid grid-cols-2 gap-3 mb-6">
-        <label class="upload-zone" id="up1">Dossard<input type="file" accept="image/*" class="hidden" onchange="uploadImage(this, 1)"></label>
-        <label class="upload-zone" id="up2">Médaille<input type="file" accept="image/*" class="hidden" onchange="uploadImage(this, 2)"></label>
-    </div>
-    <button id="saveBtn" onclick="saveEntry()" class="btn-joy">Enregistrer</button>
-</div>
-
-<!-- SELECTEUR PROFIL -->
-<div id="profileModal" class="modal" style="display: flex; align-items: center; justify-content: center;">
-    <div class="w-full max-w-[260px]">
-        <h3 class="font-black text-2xl mb-6 text-center">QUI COURTS ?</h3>
-        <button onclick="selectProfile('Vincent')" class="btn-joy mb-4">VINCENT</button>
-        <button onclick="selectProfile('Albane')" class="btn-joy" style="background: #a855f7;">ALBANE</button>
-    </div>
-</div>
 
 <script>
-    const CLOUD_NAME = "dt7tr0sec"; 
-    const UPLOAD_PRESET = "xlgyluge";
-    let currentProfile = localStorage.getItem('active_profile_race');
-    let currentPhotos = { i1: "", i2: "" };
-    let isUploading = false;
+    let currentProfile = localStorage.getItem('active_profile_race') || 'Vincent';
 
-    // --- FONCTION DE RÉCUPÉRATION (Cherche dans toutes les versions) ---
-    function getStoredData(profile) {
-        const versions = ['data_v30_', 'data_v31_', 'data_v32_'];
-        for (let v of versions) {
-            let d = localStorage.getItem(v + profile);
-            if (d && d !== "[]") return JSON.parse(d);
+    function forceRecover() {
+        let found = false;
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+            if (key.includes('data') && key.includes(currentProfile)) {
+                let data = localStorage.getItem(key);
+                if (data && data !== "[]") {
+                    localStorage.setItem('data_v32_' + currentProfile, data);
+                    found = true;
+                }
+            }
         }
-        return [];
+        if (found) { alert("Succès ! Données restaurées."); render(); }
+        else { alert("Aucune donnée trouvée."); }
     }
 
     function cleanT(t) {
@@ -117,98 +91,26 @@
         return t.replace(/^00:/, '');
     }
 
-    async function uploadImage(input, num) {
-        const file = input.files[0]; if (!file) return;
-        const txt = document.getElementById('up' + num);
-        isUploading = true; txt.innerText = "SVP ATTENDEZ...";
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('upload_preset', UPLOAD_PRESET);
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-            const data = await res.json();
-            if (data.secure_url) {
-                if(num === 1) currentPhotos.i1 = data.secure_url;
-                else currentPhotos.i2 = data.secure_url;
-                txt.classList.add('active');
-                txt.innerText = "PHOTO OK ✓";
-            }
-        } catch (e) { alert("Erreur Cloud"); txt.innerText = "ERREUR"; }
-        finally { isUploading = false; }
-    }
-
-    function formatTime(input) {
-        let v = input.value.replace(/\D/g, '');
-        if (v.length >= 5) v = v.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
-        else if (v.length >= 3) v = v.replace(/(\d{2})(\d{2})/, "$1:$2");
-        input.value = v;
-    }
-
-    function selectProfile(p) {
-        currentProfile = p;
-        localStorage.setItem('active_profile_race', p);
-        document.getElementById('profileModal').style.display = 'none';
-        document.getElementById('displayProfile').innerText = "PROFIL : " + p;
-        render();
-    }
-
-    function openSelector() { document.getElementById('profileModal').style.display = 'flex'; }
-    function openForm() { 
-        currentPhotos = { i1: "", i2: "" };
-        document.querySelectorAll('.upload-zone').forEach(z => { z.classList.remove('active'); z.innerText = z.id === "up1" ? "Dossard" : "Médaille"; });
-        document.getElementById('formModal').style.display = 'block'; 
-    }
-    function closeForm() { document.getElementById('formModal').style.display = 'none'; }
-
-    function autoDist() {
-        const map = {"5 KM":"5.00","10 KM":"10.00","Semi":"21.10","Marathon":"42.20"};
-        const c = document.getElementById('fCat').value;
-        if(map[c]) document.getElementById('fDist').value = map[c];
-    }
-
-    function saveEntry() {
-        if (isUploading) return alert("Photo en cours...");
-        const name = document.getElementById('fName').value;
-        if (!name) return alert("Nom de course obligatoire");
-        
-        // On enregistre toujours dans la version 32 désormais
-        const key = 'data_v32_' + currentProfile;
-        const data = getStoredData(currentProfile);
-        data.unshift({
-            id: Date.now(),
-            n: name,
-            d: document.getElementById('fDate').value || new Date().toISOString().split('T')[0],
-            c: document.getElementById('fCat').value,
-            k: document.getElementById('fDist').value || 0,
-            t: document.getElementById('fTime').value || "00:00:00",
-            i1: currentPhotos.i1, i2: currentPhotos.i2
-        });
-        localStorage.setItem(key, JSON.stringify(data));
-        closeForm(); render();
-    }
-
     function render() {
-        const data = getStoredData(currentProfile);
+        document.getElementById('displayProfile').innerText = "Profil : " + currentProfile;
+        let data = JSON.parse(localStorage.getItem('data_v32_' + currentProfile) || "[]");
         const list = document.getElementById('raceList');
-        let totalKm = 0;
         const records = {"5.00": null, "10.00": null, "21.10": null, "42.20": null};
 
         list.innerHTML = data.map(r => {
             const dk = parseFloat(r.k).toFixed(2);
-            totalKm += parseFloat(r.k || 0);
             if(records[dk] === undefined || records[dk] === null || (r.t !== "00:00:00" && r.t < records[dk])) records[dk] = r.t;
 
             return `
             <div class="card-race">
-                <button onclick="deleteEntry(${r.id})" class="badge-delete">✕</button>
                 <div class="img-box">
-                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center text-[8px] text-slate-300 font-bold uppercase">Dossard</div>`}
-                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center text-[8px] text-slate-300 font-bold uppercase">Médaille</div>`}
+                    ${r.i1 ? `<img src="${r.i1}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Dossard</div>`}
+                    ${r.i2 ? `<img src="${r.i2}">` : `<div class="flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase">Médaille</div>`}
                 </div>
                 <div class="card-content">
                     <p class="text-[9px] font-black text-rose-500 uppercase mb-1">${r.d} • ${r.c}</p>
-                    <h2 class="text-lg font-black italic uppercase text-slate-800 leading-tight">${r.n}</h2>
-                    <div class="flex justify-between mt-3 pt-3 border-t border-slate-50">
+                    <h2 class="text-lg font-black italic uppercase text-slate-800 leading-tight mb-3">${r.n}</h2>
+                    <div class="flex justify-between pt-3 border-t border-slate-50">
                         <div><p class="text-[8px] text-slate-400 font-bold uppercase">Dist.</p><p class="font-black italic text-sm">${r.k}k</p></div>
                         <div><p class="text-[8px] text-slate-400 font-bold uppercase">Chrono</p><p class="font-black italic text-sm">${cleanT(r.t)}</p></div>
                     </div>
@@ -220,22 +122,9 @@
         document.getElementById('rp10').innerText = cleanT(records["10.00"]);
         document.getElementById('rp21').innerText = cleanT(records["21.10"]);
         document.getElementById('rp42').innerText = cleanT(records["42.20"]);
-
-        document.getElementById('statsBox').innerHTML = `
-            <div class="bg-white p-4 rounded-2xl text-center shadow-sm"><p class="text-xl font-black text-rose-500">${data.length}</p><p class="text-[8px] font-bold text-slate-300 uppercase">Courses</p></div>
-            <div class="bg-white p-4 rounded-2xl text-center shadow-sm"><p class="text-xl font-black text-indigo-500">${totalKm.toFixed(1)}</p><p class="text-[8px] font-bold text-slate-300 uppercase">Total KM</p></div>
-        `;
     }
 
-    function deleteEntry(id) { if(confirm("Supprimer cette course ?")) { 
-        const key = 'data_v32_' + currentProfile;
-        let data = getStoredData(currentProfile);
-        data = data.filter(r => r.id !== id);
-        localStorage.setItem(key, JSON.stringify(data));
-        render(); 
-    }}
-
-    if (currentProfile) selectProfile(currentProfile); else openSelector();
+    render();
 </script>
 </body>
 </html>
